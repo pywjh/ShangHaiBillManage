@@ -4,7 +4,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import font_manager
 from collections import Counter
-from wordcloud import WordCloud
 from win32api import GetSystemMetrics
 from PIL import Image
 from datetime import datetime
@@ -12,6 +11,8 @@ from datetime import datetime
 import setting
 from ShangHai_life_consumpyion_record import *
 
+if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
+    from wordcloud import WordCloud
 
 class MouthCost():
     """
@@ -49,8 +50,10 @@ class MouthCost():
         # self.alpha_width = setting.ALPHA_WIDTH # 辅助线透明度 0~1
         # self.cloud_width = setting.CLOUD_WIDTH  # 云词图片宽度
         # self.cloud_height = setting.CLOUD_HEIGHT # 云词图片高度
+
         # self.background_color = setting.BACKGROUND_COLOR # 云词背景颜色
-        self.mark = np.array(Image.open(r'.\mask\mark.png'))
+        if setting.CLOUDWORD_SHAPE:
+            self.mark = np.array(Image.open(r'.\mask\mark.png'))
         plt.rcParams['font.sans-serif'] = setting.GLOBAL_FONT
 
     def __call__(self, *args, **kwargs):

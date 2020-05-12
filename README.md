@@ -30,7 +30,7 @@ other_month_20_4 = {
 }
 ```
 #### 运行
-在`run.py`文件里面填上对应维护的`eat_month`和`other_month`就可以了
+在`app.py`文件里面填上对应维护的`eat_month`和`other_month`就可以了
 
 #### 设置
 配置文件`setting.py`写的还算清楚，就不多介绍了
