@@ -1,0 +1,12 @@
+/ShangHai_life_consumpyion_record.py
+
+/2020年4月账单记录/
+
+# Pycharm
+.idea
+
+#__pycache__/
+*.py[cod]
+*$py.class
+
+
