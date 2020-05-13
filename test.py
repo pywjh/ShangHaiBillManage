@@ -1,4 +1,4 @@
-import ShangHai_life_consumpyion_record as slcr
+import cost_record as slcr
 
 def year_cost_record():
 

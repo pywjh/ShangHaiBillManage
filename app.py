@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for
 
 from api.bill_manage import MouthCost
-from ShangHai_life_consumpyion_record import *
+from cost_record import *
 
 from api import draw
 

@@ -9,7 +9,7 @@ from PIL import Image
 from datetime import datetime
 
 import setting
-from ShangHai_life_consumpyion_record import *
+from cost_record import *
 
 if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
     from wordcloud import WordCloud
