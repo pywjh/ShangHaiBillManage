@@ -1,3 +1,5 @@
+import setting
+
 import os
 import numpy as np
 
@@ -8,8 +10,9 @@ from win32api import GetSystemMetrics
 from PIL import Image
 from datetime import datetime
 
-import setting
 from cost_record import *
+from .config import *
+from . import draw
 
 if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
     from wordcloud import WordCloud
@@ -446,6 +449,64 @@ class MouthCost():
 
         # plt.show()
         plt.savefig("./{}年{}月消费种类饼状图".format(self.year, self.month_number))
+
+    def web_index_bar(self):
+        """
+        网页版的条形数据准备
+        :return: x, y
+        """
+        x = self.x_axis_zh()
+        eat_y = self.get_eat_y()
+        other_y = self.get_other_y()
+        all_y = self.get_all_y()
+        y = []
+        y.append(('饮食消费', eat_y))
+        y.append(('其他消费', other_y))
+        y.append(('合计消费', all_y))
+        return (x, y)
+
+    def web_index_pie(self):
+        """
+        网站首页饼状图
+        :return: Pie
+        """
+        payout = self.all_total()
+        surplus = round(BUDGET_OF_MONTH - payout)
+        if surplus < 0:
+            surplus = 0
+
+        data = [('结余', surplus), ('支出', payout)]
+        return draw.draw_usage_pie(payout=data, budget=[('预算', BUDGET_OF_MONTH)], title="本月结余")
+
+    def to_table(self):
+        '''
+        首页账单概览
+        :return: ([{name1: balance1}, {name2: balance2}],  [{columns}])
+        '''
+        current_month_payment = self.all_total()
+        status = [
+            {'name': '本月收入','balance': CURRENT_SALARY},
+            {'name': '本月支出','balance': current_month_payment},
+            {'name': '本月房租','balance': RENT},
+            {'name': '本月预算','balance': BUDGET_OF_MONTH},
+            {'name': '预算结余','balance': round((BUDGET_OF_MONTH - current_month_payment), 2)},
+            {'name': '本月结余','balance': round((CURRENT_SALARY - current_month_payment - RENT), 2)},
+        ]
+        columns = [
+            {
+                "field": "name",  # which is the field's name of data key
+                "title": "名称",  # display as the table header's name
+                "sortable": False,
+            },
+            {
+                "field": "balance",
+                "title": "金额 (元)",
+                "sortable": False,
+            },
+        ]
+        return status, columns
+
+
 
 if __name__ == '__main__':
     record = MouthCost(eat_month=eat_month_20_4, other_month=other_month_20_4) # 实例化

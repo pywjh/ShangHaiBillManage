@@ -13,3 +13,22 @@ def draw_balance_bar(xaxis, yaxis, title="消费统计", markline=None, width=20
                         tooltip_opts=opts.TooltipOpts(trigger='axis', axis_pointer_type='shadow'))
     bar.set_series_opts(label_opts=opts.LabelOpts(is_show=False))
     return bar
+
+def draw_usage_pie(payout, budget, title) -> Pie:
+    pie = Pie()
+    pie.add(series_name=title,
+          data_pair=budget,
+          radius=["0%", "30%"],
+          label_opts=opts.LabelOpts(position="inner"),
+          )
+    pie.add(series_name=title,
+          radius=["30%", "40%"],
+          data_pair=payout,
+          label_opts=opts.LabelOpts(position="outside",
+                                    formatter="{b}:\n{c}({d}%)",
+                                    border_width=1,
+                                    border_radius=4,
+                                    ),
+          )
+
+    return pie
