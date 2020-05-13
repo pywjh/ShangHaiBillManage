@@ -1,8 +1,9 @@
-from flask import Flask, render_template, url_for
+from datetime import datetime
+from flask import Flask, render_template, url_for, request
+from werkzeug.utils import redirect
 
 from api.bill_manage import MouthCost
 from cost_record import *
-
 from api import draw
 
 app = Flask(__name__)
@@ -37,6 +38,33 @@ def get_month_usage():
     """
     pie = record.web_index_pie()
     return pie.dump_options()
+
+
+@app.route("/details", methods=['GET', 'POST'])
+def details():
+    name = 'select_month'
+    if request.method == 'GET':
+        t = datetime.now()
+    else:
+        month = request.form.get(name)
+        try:
+            t: datetime = datetime.strptime(month, '%Y-%m')
+        except ValueError:
+            t = datetime.now()
+
+    return redirect(url_for('get_details', year=t.year, month=t.month))
+
+
+@app.route("/details/year=<year>&month=<month>")
+def get_details(year, month):
+    name = 'select_month'
+    year = int(year)
+    month = int(month)
+    data, columns = api.get_balance_details_in_month(year, month)
+
+    return render_template("details.html",
+                           chart_url=url_for('get_bar_chart', year=year, month=month),
+                           data=data, columns=columns, name=name)
 
 
 if __name__ == "__main__":
