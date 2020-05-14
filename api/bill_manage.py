@@ -450,9 +450,19 @@ class MouthCost():
         # plt.show()
         plt.savefig("./{}年{}月消费种类饼状图".format(self.year, self.month_number))
 
+    def web_details_bar(self):
+        """
+        账单明细页面条形图
+        :return: x, y
+        """
+        x = self.x_axis_zh()
+        all_y = self.get_all_y()
+        y = [('合计消费', all_y)]
+        return (x, y)
+
     def web_index_bar(self):
         """
-        网页版的条形数据准备
+        网页首页的条形数据准备
         :return: x, y
         """
         x = self.x_axis_zh()

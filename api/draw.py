@@ -14,6 +14,7 @@ def draw_balance_bar(xaxis, yaxis, title="消费统计", markline=None, width=20
     bar.set_series_opts(label_opts=opts.LabelOpts(is_show=False))
     return bar
 
+
 def draw_usage_pie(payout, budget, title) -> Pie:
     pie = Pie()
     pie.add(series_name=title,
