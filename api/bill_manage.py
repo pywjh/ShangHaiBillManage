@@ -100,6 +100,29 @@ class MouthCost():
         weekday = date.isoweekday()
         return weekday_dict.get(weekday)
 
+    def details_bill(self):
+        """
+        整理详细的账单内容，方便界面展示
+        :return: list(dict, dict)
+        """
+        bills = []
+        keys = self.x_axis_num()
+        for key in keys:
+            for x in self.eat_month.get(key):
+                    bills.append({
+                        'time': "{month}月{day}日({weekday})".format(month=key.split("_")[0],day=key.split("_")[-1],weekday=self.get_weekday(key)),
+                        'name': name,
+                        'money': money,
+                     })
+            for other_dict in self.other_month.values():
+                for name, money in other_dict.items():
+                    bills.append({
+                        'time': "{month}月{day}日({weekday})".format(month=key.split("_")[0],day=key.split("_")[-1],weekday=self.get_weekday(key)),
+                        'name': name,
+                        'money': money,
+                     })
+        return bills
+
     def file_manage(self):
         file_name = self.year + '年' + self.month_number + '月' + '账单记录'
         if not os.path.exists(file_name):
@@ -515,6 +538,14 @@ class MouthCost():
             },
         ]
         return status, columns
+
+    def to_detail_table(self):
+        """
+        账单详情表
+        :return:  data, columns
+        """
+        details_bill = self.details_bill()
+
 
 
 

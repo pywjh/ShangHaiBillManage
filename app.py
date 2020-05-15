@@ -67,7 +67,8 @@ def details():
 @app.route("/details/year=<year>&month=<month>")
 def get_details(year, month):
     name = 'select_month'
-    # data, columns = api.get_balance_details_in_month(year, month)
+    # data, columns =
+    manager(year, month).to_detail_table()
 
     return render_template("details.html",
                            chart_url=url_for('get_bar_chart', year=year, month=month),
