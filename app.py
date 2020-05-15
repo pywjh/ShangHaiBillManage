@@ -1,3 +1,4 @@
+import datetime
 from datetime import datetime
 from werkzeug.utils import redirect
 from flask import Flask, render_template, url_for, request
@@ -48,15 +49,19 @@ def get_month_usage():
 def details():
     name = 'select_month'
     if request.method == 'GET':
-        t = datetime.now()
+        year = 'null'
+        month = 'null'
     else:
         month = request.form.get(name)
         try:
             t: datetime = datetime.strptime(month, '%Y-%m')
         except ValueError:
             t = datetime.now()
+        finally:
+            year = t.year
+            month = t.month
 
-    return redirect(url_for('get_details', year=t.year, month=t.month))
+    return redirect(url_for('get_details', year=year, month=month))
 
 
 @app.route("/details/year=<year>&month=<month>")

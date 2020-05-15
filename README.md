@@ -6,7 +6,7 @@ web == flask database == py -> dict
 账单记录还比较low（py文件字典记录），web端搭建ing...
 
 #### 记账
-ShangHai_life_consumpyion_record.py文件，需要自己生成
+`cost_record.py`文件，需要自己维护
 ```python
 eat_month_20_4 = {
     '4_16': {
@@ -30,17 +30,14 @@ other_month_20_4 = {
 }
 ```
 #### 运行
-在`app.py`文件里面填上对应维护的`eat_month`和`other_month`就可以了
+安装好对应的python库，在`app.py`文件运行代码就可以了
 
 #### 设置
-配置文件`setting.py`写的还算清楚，就不多介绍了
+配置文件`setting.py`和`config`写的还算清楚，就不多介绍了
 
 #### 环境
 ```cmd
-pip3 install numpy
-pip3 install matplotlib
-pip3 install pywin32
-pip3 install Pillow
+pip install -r requirements.txt
 ```
 `wordcloud`云词安装不能直接pip
 

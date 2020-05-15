@@ -11,17 +11,17 @@ from .bill_manage import MouthCost
 from .config import *
 
 
-def get_date(year=None, month=None, day=1):
+def get_date(year='null', month='null', day=1):
     """
     这里的逻辑比较个性化：
         因为本人15号发工资，所以做的账单是从15号开始到次月15号结束
-        所以取数据的时候在15号之前取得还是上个月的月份（上月15到下个月15）
-        15号之后的就是当前月份的月份数
+        所以直接查看数据时，默认今天的时候会判断日期，15号之前去上个月的账单，之后就取当月的账单
+        手动选择的话，就没有逻辑
     :return: Dict
     """
     eat_month_data = {}
     other_month_data = {}
-    if not year or not month:
+    if  year in ('null', None) or  month in ('null', None):
         year = str(datetime.date.today().year)[2:]
         month = datetime.date.today().month
         if datetime.date.today().day < PAY_SALARY_DAY:
@@ -30,7 +30,7 @@ def get_date(year=None, month=None, day=1):
             month = str(month)
     else:
         year = year[2:]
-        month = str((datetime.date(datetime.date.today().year, int(month), day) - relativedelta(months=1)).month)
+        month = month
     eat_month = 'eat_month' + '_' + year + '_' + month
     other_month = 'other_month' + '_' + year + '_' + month
     if hasattr(cost_record, eat_month):
