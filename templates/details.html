@@ -29,24 +29,71 @@
 </div>
 
 
-    <div class="container" style="padding: 10px; ">
-        <div id="chart" style="width:1200px; height:600px;"></div>
-    </div>
-    <script>
-        $(
-            function () {
-                var chart = echarts.init(document.getElementById('chart'), 'white', {renderer: 'canvas'});
-                $.ajax({
-                    type: "GET",
-                    url: "{{ chart_url }}",
-                    dataType: 'json',
-                    success: function (result) {
-                        chart.setOption(result);
-                    }
-                });
+<div class="container" style="padding: 10px; ">
+    <div id="chart" style="width:1200px; height:600px;"></div>
+</div>
+<script>
+    $(
+        function () {
+            var chart = echarts.init(document.getElementById('chart'), 'white', {renderer: 'canvas'});
+            $.ajax({
+                type: "GET",
+                url: "{{ chart_url }}",
+                dataType: 'json',
+                success: function (result) {
+                    chart.setOption(result);
+                }
+            });
+        }
+    )
+
+</script>
+
+<div class="container" style="padding: 10px; ">
+    <table id="table" data-row-style="rowStyle" data-flat="true"
+           data-show-toggle="true" data-virtual-scroll="true"
+           data-height="1000" data-pagination="true"
+           data-page-size="25"></table>
+    <!--        <table id="table"  class=“table table-sm table-hover” data-row-style="rowStyle" data-flat="true" data-show-toggle="true" data-virtual-scroll="true" ></table>-->
+    <script type='text/javascript'>
+
+        $(function () {
+            var data = {{data|tojson}}
+            var columns = {{columns|tojson}}
+            if (data.length == 0) {
+                alert('所选择的日期未维护账单记录！');
+                return
             }
-        )
+            $('#table').bootstrapTable({
+                data: data,
+                columns: columns,
+                striped: 'true',
+            });
+
+        });
+
 
     </script>
+    <script>
+        function rowStyle(row, index) {
+            var classes = [
+                'bg-blue',
+                'bg-green',
+                'bg-orange',
+                'bg-yellow',
+                'bg-red',
+                'bg-teal',
+            ]
+
+            if (row.type == "eat") {
+                return {classes: 'bg-teal'}
+            } else if (row.type == 'other') {
+                return {classes: 'bg-blue'}
+            }
+            return {classes: 'bg-gray'}
+        }
+    </script>
+
+</div>
 
 {% endblock %}

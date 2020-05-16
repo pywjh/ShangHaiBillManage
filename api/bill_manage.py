@@ -1,6 +1,7 @@
 import setting
 
 import os
+import datetime as dt
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -17,6 +18,7 @@ from . import draw
 if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
     from wordcloud import WordCloud
 
+
 class MouthCost():
     """
         每天的消费情况统计
@@ -28,17 +30,17 @@ class MouthCost():
         将一个月的消费类别做成条形图             category_bar
         生成消费类别的云图                               
     """
-    def __init__(self, eat_month, other_month, year=datetime.now().year):
-        self.eat_month = eat_month
-        self.other_month = other_month
-
+    def __init__(self, record, year, month):
+        self.eat_month, self.other_month = self.split_record(record)
+        self.record = record
         self.font = setting.FONT # 云图所使用的字体
-        self.year = str(year)
+        self.year = str(dt.date.today().year) if not year or year=='null' else year
         self.my_font = font_manager.FontProperties(fname=self.font) # 统计图所使用的字体包
         self.bar_width = GetSystemMetrics(0) / 100  # 折线图宽
         self.bar_height = GetSystemMetrics(1) / 100  # 折线图高
         self.bar_dpi = 200  # 图片分辨率
-        self.month_number = str(eat_month)[2] # 当前统计的月份
+        self.month_number = str(dt.date.today().month) if not month or month=='null' else month#
+        # 当前统计的月份
         # self.y_step = setting.Y_STEP # x轴刻度步长
         # self.title_size = setting.TITLE_SIZE # 标题字体大小
         # self.label_size = setting.LABEL_SIZE # 轴刻度单位字体大小
@@ -84,7 +86,24 @@ class MouthCost():
             print('正在生成消费种类饼状图...')
             self.pie()
 
+    def split_record(self, record):
+        """
+        将账单按type分成两个列表
+        :param record: csv文件读取的数据 -> list(dict)
+        :return: eat_month_data -> list(dict),
+                 other_month_data -> list(dict)
+        """
+        eat_month_data = list(filter(lambda li: li['type'] == 'eat', record))
+        other_month_data = list(
+            filter(lambda li: li['type'] == 'other', record))
+        return eat_month_data, other_month_data
+
     def get_weekday(self, no_format_date):
+        """
+        为对应的日期添加周几的信息
+        :param no_format_date: date -> str
+        :return: str
+        """
         weekday_dict = {
             1: '一',
             2: '二',
@@ -100,27 +119,27 @@ class MouthCost():
         weekday = date.isoweekday()
         return weekday_dict.get(weekday)
 
+    def format_date(self, no_format_date):
+        result = "{month}月{day}日({weekday})".format(
+            month=no_format_date.split("_")[0],
+            day=no_format_date.split("_")[-1],
+            weekday=self.get_weekday(no_format_date))
+        return result
+
     def details_bill(self):
         """
         整理详细的账单内容，方便界面展示
         :return: list(dict, dict)
         """
         bills = []
-        keys = self.x_axis_num()
-        for key in keys:
-            for x in self.eat_month.get(key):
-                    bills.append({
-                        'time': "{month}月{day}日({weekday})".format(month=key.split("_")[0],day=key.split("_")[-1],weekday=self.get_weekday(key)),
-                        'name': name,
-                        'money': money,
-                     })
-            for other_dict in self.other_month.values():
-                for name, money in other_dict.items():
-                    bills.append({
-                        'time': "{month}月{day}日({weekday})".format(month=key.split("_")[0],day=key.split("_")[-1],weekday=self.get_weekday(key)),
-                        'name': name,
-                        'money': money,
-                     })
+        for rec in self.record:
+            bills.append({
+                'date': self.year + '年' + self.format_date(rec.get('date', '')),
+                'name': rec.get('name', ''),
+                'payment': rec.get('payment', '-'),
+                'note': rec.get('note', ''),
+                'type': rec.get('type', 'none')
+            })
         return bills
 
     def file_manage(self):
@@ -132,9 +151,12 @@ class MouthCost():
             os.chdir(file_name)  # 进入文件夹
 
     def x_axis_num(self):
-        eat_month = [i for i in self.eat_month.keys()]
-        other_month = [i for i in self.other_month.keys()]
-        date_list = list(set(eat_month + other_month))
+        date_list = list(
+            set(
+                [date.get('date') for date in self.eat_month] +
+                [date.get('date') for date in self.other_month]
+            )
+        )
         date_list.sort(
             key=lambda date: datetime(
                 year=int(self.year),
@@ -145,14 +167,7 @@ class MouthCost():
 
     def x_axis_zh(self):
         date_list = self.x_axis_num()
-        date_list = [
-            "{month}月{day}日({weekday})".format(
-                month=i.split("_")[0], 
-                day=i.split("_")[-1], 
-                weekday=self.get_weekday(i)
-                )
-                for i in date_list
-        ]
+        date_list = [self.format_date(i) for i in date_list]
         return date_list
 
     def eat_sum(self):
@@ -160,9 +175,12 @@ class MouthCost():
             饮食上一个月的总消费额，{日期: 日结算}
             return: eat_dict
         """
+        date_list = self.x_axis_num()
         eat_dict = {}
-        for i, j in self.eat_month.items():
-            eat_dict[i] = sum(j.values())
+        for date in date_list:
+            eat_dict[date] = round(sum(
+                [float(eat.get('payment', 0)) for eat in filter(
+                    lambda li: li['date'] == date, self.eat_month)]), 2)
         return eat_dict
 
     def other_sum(self):
@@ -170,9 +188,12 @@ class MouthCost():
             其他消费，一个月的总消费额，{日期: 日结算}
             return: other_dict
         """
+        date_list = self.x_axis_num()
         other_dict = {}
-        for i, j  in self.other_month.items():
-            other_dict[i] = sum(j.values())
+        for date in date_list:
+            other_dict[date] = round(sum(
+                [float(other.get('payment', 0)) for other in filter(
+                    lambda li: li['date']==date, self.other_month)]), 2)
         return other_dict
 
     def get_eat_y(self):
@@ -473,15 +494,6 @@ class MouthCost():
         # plt.show()
         plt.savefig("./{}年{}月消费种类饼状图".format(self.year, self.month_number))
 
-    def web_details_bar(self):
-        """
-        账单明细页面条形图
-        :return: x, y
-        """
-        x = self.x_axis_zh()
-        all_y = self.get_all_y()
-        y = [('合计消费', all_y)]
-        return (x, y)
 
     def web_index_bar(self):
         """
@@ -545,11 +557,37 @@ class MouthCost():
         :return:  data, columns
         """
         details_bill = self.details_bill()
+        columns = [
+            {
+                "field": "date",  # which is the field's name of data key
+                "title": "日期",  # display as the table header's name
+                "sortable": False,
+            },
+            {
+                "field": "name",
+                "title": "用途",
+                "sortable": False,
+            },
+            {
+                "field": "payment",
+                "title": "金额（元）",
+                "sortable": False,
+            },
+            {
+                "field": "note",
+                "title": "备注",
+                "sortable": False,
+            },
+        ]
+
+        return details_bill, columns
+
 
 
 
 
 if __name__ == '__main__':
+
     record = MouthCost(eat_month=eat_month_20_4, other_month=other_month_20_4) # 实例化
     record() # 运行程序
 

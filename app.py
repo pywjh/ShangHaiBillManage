@@ -52,7 +52,7 @@ def details():
         year = 'null'
         month = 'null'
     else:
-        month = request.form.get(name)
+        month = request.form.get(name) # 获取界面选择的日期
         try:
             t: datetime = datetime.strptime(month, '%Y-%m')
         except ValueError:
@@ -67,19 +67,21 @@ def details():
 @app.route("/details/year=<year>&month=<month>")
 def get_details(year, month):
     name = 'select_month'
-    # data, columns =
-    manager(year, month).to_detail_table()
+    record = manager(year, month)
+    data, columns = [], []
+    if record:
+        data, columns = record.to_detail_table()
 
     return render_template("details.html",
                            chart_url=url_for('get_bar_chart', year=year, month=month),
-                           name=name)
+                           name=name, data=data, columns=columns)
 
 
 @app.route("/barChart/year=<year>&month=<month>")
 def get_bar_chart(year, month):
     record = manager(year, month)
     if record:
-        x, y = record.web_details_bar()
+        x, y = record.web_index_bar()
     else:
         x = ['无数据']
         y = []

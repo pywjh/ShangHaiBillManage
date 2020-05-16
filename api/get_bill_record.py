@@ -3,12 +3,34 @@
 # Author :        wjh
 # date：          2020/5/14
 
-import datetime
-from dateutil.relativedelta import relativedelta
+import os
+import csv
+import datetime as dt
 
-import cost_record
-from .bill_manage import MouthCost
-from .config import *
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
+
+from api.bill_manage import MouthCost
+from api.config import *
+
+base_dir = os.path.dirname(__file__)
+
+
+def _read_csv(path, encoding_list=('GBK', 'UTF-8')):
+    for endcoding in encoding_list:
+        try:
+            with open(path, encoding=endcoding) as csv_file:
+
+                reader = csv.DictReader(csv_file)
+                return [row for row in reader if row]
+
+        except UnicodeDecodeError:
+            print("Not Support This File Encoding!!")
+        except FileNotFoundError:
+            print('未找到账单文件：{}'.format(path.split('/')[-1]))
+        except Exception as e:
+            print(e)
+    return None
 
 
 def get_date(year='null', month='null', day=1):
@@ -19,33 +41,35 @@ def get_date(year='null', month='null', day=1):
         手动选择的话，就没有逻辑
     :return: Dict
     """
-    eat_month_data = {}
-    other_month_data = {}
     if  year in ('null', None) or  month in ('null', None):
-        year = str(datetime.date.today().year)[2:]
-        month = datetime.date.today().month
-        if datetime.date.today().day < PAY_SALARY_DAY:
-            month = str((datetime.date(datetime.date.today().year, int(month), day) - relativedelta(months=1)).month)
+        year = str(dt.date.today().year)
+        month = dt.date.today().month
+        if dt.date.today().day < PAY_SALARY_DAY:
+            month = str((dt.date(dt.date.today().year, int(month),
+                                day) - relativedelta(months=1)).month)
         else:
             month = str(month)
     else:
-        year = year[2:]
+        year = year
         month = month
-    eat_month = 'eat_month' + '_' + year + '_' + month
-    other_month = 'other_month' + '_' + year + '_' + month
-    if hasattr(cost_record, eat_month):
-        eat_month_data = getattr(cost_record, eat_month)
-    if hasattr(cost_record, other_month):
-        other_month_data = getattr(cost_record, other_month)
-    return eat_month_data, other_month_data
+    path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
+    record = _read_csv(path)
+    if record:
+        record.sort(key=lambda date: datetime(
+                    year=int(year),
+                    month=int(date['date'].split('_')[0]),
+                    day=int(date['date'].split('_')[-1])
+                ))
+        return record
 
 
 def manager(year=None, month=None):
-    eat_month_data, other_month_data = get_date(year=year, month=month)
-    if eat_month_data or other_month_data:
-        record = MouthCost(
-            eat_month=eat_month_data,
-            other_month=other_month_data
-        )
+    records = get_date(year=year, month=month)
+    if records:
+        record = MouthCost(record=records, year=year, month=month)
         return record
     return None
+
+
+if __name__ == '__main__':
+    print(manager('2020', '4'))
