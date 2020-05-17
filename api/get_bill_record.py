@@ -70,6 +70,22 @@ def manager(year=None, month=None):
         return record
     return None
 
+def add_record(params):
+    date = params.get('date')
+    name = params.get('name')
+    payment = params.get('payment')
+    type = params.get('type')
+    note = params.get('note')
+    year, month = eval(params.get('date_f'))
+    if year == 'null' and month == 'null':
+        year = datetime.now().year
+        month = datetime.now().month
+    path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
+    content = ''
+    # with open(path, 'a+') as csv_file:
+    #
+    #     csv.write()
+
 
 if __name__ == '__main__':
     print(manager('2020', '4'))

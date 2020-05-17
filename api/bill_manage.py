@@ -30,7 +30,7 @@ class MouthCost():
         将一个月的消费类别做成条形图             category_bar
         生成消费类别的云图                               
     """
-    def __init__(self, record, year, month):
+    def __init__(self, record, year, month, *args, **kwargs):
         self.eat_month, self.other_month = self.split_record(record)
         self.record = record
         self.font = setting.FONT # 云图所使用的字体
@@ -125,6 +125,15 @@ class MouthCost():
             day=no_format_date.split("_")[-1],
             weekday=self.get_weekday(no_format_date))
         return result
+
+    def get_title_code(self):
+        """
+        获取csv文件的标题，实现界面数据高度灵活性
+        :return: title -> list
+        """
+        data = self.record and self.record[0] or []
+        if data:
+            return data.keys()
 
     def details_bill(self):
         """
@@ -551,12 +560,12 @@ class MouthCost():
         ]
         return status, columns
 
-    def to_detail_table(self):
+    def to_detail_table(self, update=False):
         """
         账单详情表
-        :return:  data, columns
+        :return:  details_bill, columns   -> list(dict, dict)
         """
-        details_bill = self.details_bill()
+        details_bill = self.details_bill() # -> list(dict, dict)
         columns = [
             {
                 "field": "date",  # which is the field's name of data key
@@ -579,6 +588,13 @@ class MouthCost():
                 "sortable": False,
             },
         ]
+        if update:
+            columns.insert(3, {
+                "field": "type",
+                "title": "类型",
+                "sortable": False,
+            })
+            return details_bill[::-1][:20], columns
 
         return details_bill, columns
 
