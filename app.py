@@ -119,6 +119,13 @@ def get_update(year, month):
 def add_bill():
     params = request.form
     code = add_record(params)
+    year, month = eval(params.get('date_f'))
+    if year == 'null' and month == 'null':
+        year = datetime.now().year
+        month = datetime.now().month
+    if code:
+        return redirect(url_for('get_update', year=year, month=month))
+        # get_update(str(year), str(month))
 
 
 if __name__ == "__main__":

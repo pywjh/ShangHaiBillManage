@@ -1,6 +1,7 @@
 import setting
 
 import os
+import csv
 import datetime as dt
 import numpy as np
 
@@ -31,8 +32,10 @@ class MouthCost():
         生成消费类别的云图                               
     """
     def __init__(self, record, year, month, *args, **kwargs):
+        self.base_dir=os.path.dirname(__file__)
         self.eat_month, self.other_month = self.split_record(record)
         self.record = record
+        self.salary = self.salary()
         self.font = setting.FONT # 云图所使用的字体
         self.year = str(dt.date.today().year) if not year or year=='null' else year
         self.my_font = font_manager.FontProperties(fname=self.font) # 统计图所使用的字体包
@@ -85,6 +88,24 @@ class MouthCost():
         if setting.PIE: # 消费种类饼状图
             print('正在生成消费种类饼状图...')
             self.pie()
+
+    def salary(self):
+        encoding_list = ('GBK', 'UTF-8')
+        path = '{}/cost_record/salary_record.csv'.format(self.base_dir[:-4])
+        for endcoding in encoding_list:
+            try:
+                with open(path, encoding=endcoding) as csv_file:
+
+                    reader = csv.DictReader(csv_file)
+                    return [row for row in reader if row]
+
+            except UnicodeDecodeError:
+                print("Not Support This File Encoding!!")
+            except FileNotFoundError:
+                print('未找到账单文件：{}'.format(path.split('/')[-1]))
+            except Exception as e:
+                print(e)
+        return None
 
     def split_record(self, record):
         """
@@ -539,7 +560,7 @@ class MouthCost():
         '''
         current_month_payment = self.all_total()
         status = [
-            {'name': '本月收入','balance': CURRENT_SALARY},
+            {'name': '本月收入','balance': list(filter(lambda li: li['date']==f"{self.year}_{self.month_number}",self.salary))[0]['salary']},
             {'name': '本月支出','balance': current_month_payment},
             {'name': '本月房租','balance': RENT},
             {'name': '本月预算','balance': BUDGET_OF_MONTH},

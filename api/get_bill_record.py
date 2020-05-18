@@ -71,20 +71,24 @@ def manager(year=None, month=None):
     return None
 
 def add_record(params):
-    date = params.get('date')
-    name = params.get('name')
-    payment = params.get('payment')
-    type = params.get('type')
-    note = params.get('note')
-    year, month = eval(params.get('date_f'))
-    if year == 'null' and month == 'null':
-        year = datetime.now().year
-        month = datetime.now().month
-    path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
-    content = ''
-    # with open(path, 'a+') as csv_file:
-    #
-    #     csv.write()
+    try:
+        date = params.get('date')
+        name = params.get('name')
+        payment = params.get('payment')
+        type = params.get('type')
+        note = params.get('note')
+        year, month = eval(params.get('date_f'))
+        if year == 'null' and month == 'null':
+            year = datetime.now().year
+            month = datetime.now().month
+        path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
+        content = f'\n{date},{name},{payment},{type},{note}'
+        # csv文件每两行中间都有一行空白行，解决办法就是写入后面加上newline=''
+        with open(path, 'a+', encoding='GBK', newline='') as csv_file:
+            csv_file.write(content)
+        return True
+    except Exception:
+        return False
 
 
 if __name__ == '__main__':

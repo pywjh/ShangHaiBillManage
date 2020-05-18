@@ -73,45 +73,39 @@
             </table>
         </form>
     </div>
-<!--    <script>-->
-<!--        $(function () {-->
-<!--            let $button_submit = $('input#add'); //提交按钮-->
-<!--            let $date_f = $('input[name="date_f"]'); // 年月-->
-<!--            let $date = $('input[name="date"]'); // 日期-->
-<!--            let $name = $('input[name="name"]'); // 用途-->
-<!--            let $payment = $('input[name="payment"]'); // 金额-->
-<!--            let $type = $('input[name="type"]'); // 类型-->
-<!--            let $note = $('textarea[name="note"]'); // 备注-->
+    <script>
+        $(function () {
+            let $button_submit = $('input#add'); //提交按钮
+            let $date_f = $('input[name="date_f"]'); // 年月
+            let $date = $('input[name="date"]'); // 日期
+            let $name = $('input[name="name"]'); // 用途
+            let $payment = $('input[name="payment"]'); // 金额
+            let $type = $('input[name="type"]'); // 类型
+            let $note = $('textarea[name="note"]'); // 备注
 
-<!--            var web_url = window.location.host;-->
-<!--            var date_f = $date_f.val();-->
-<!--            var date = $date.val();-->
-<!--            var name = $name.val();-->
-<!--            var payment = $payment.val();-->
-<!--            var type = $type.val();-->
-<!--            var note = $note.val();-->
+            var web_url = window.location.host;
 
-<!--            $button_submit.click(function () {-->
-<!--                let url = 'http://' + web_url + '/add/';-->
-<!--                let data = {-->
-<!--                    date_f: date_f,-->
-<!--                    date: date,-->
-<!--                    name: name,-->
-<!--                    payment: payment,-->
-<!--                    type: type,-->
-<!--                    note: note,-->
-<!--                };-->
-<!--                $.ajax({-->
-<!--                    url: url,-->
-<!--                    type: "POST",-->
-<!--                    data: JSON.stringify(data),-->
-<!--                    // 请求内容的数据类型（前端发给后端的格式）-->
-<!--                    contentType: "application/json; charset=utf-8",-->
-<!--                    async: false,	// 关掉异步功能-->
-<!--                })-->
-<!--            })-->
-<!--        })-->
-<!--    </script>-->
+            $button_submit.click(function () {
+                let url = 'http://' + web_url + '/add/';
+                let data = {
+                    date_f: $date_f.val(),
+                    date: $date.val(),
+                    name: $name.val(),
+                    payment: $payment.val(),
+                    type: $type.val(),
+                    note: $note.val(),
+                };
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: JSON.stringify(data),
+                    // 请求内容的数据类型（前端发给后端的格式）
+                    contentType: "application/json; charset=utf-8",
+                    async: false,	// 关掉异步功能
+                })
+            })
+        })
+    </script>
 
 </div>
 
