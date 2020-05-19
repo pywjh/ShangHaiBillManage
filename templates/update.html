@@ -28,7 +28,7 @@
 
 
     <div>
-        <form action="/add" method="post">
+        <form>
             <table style="margin: auto">
                 <div><span style="font-size:20px;">新增数据:</span></div>
                 <head>
@@ -41,15 +41,15 @@
                         <th class="datepicker-inline">
                             <input type="text" placeholder="日期" class="form-control picker"
                            name='date'
-                           value="{{dt.month}}_{{dt.day}}" required>
+                           value="{{dt.month}}_{{dt.day}}" >
                         </th>
                         <th class="datepicker-inline">
                             <input type="text" placeholder="用途" class="form-control picker"
-                           name='name' required>
+                           name='name' >
                         </th>
                         <th class="datepicker-inline">
                             <input type="text" placeholder="金额（元）" class="form-control picker"
-                           name='payment' required>
+                           name='payment' >
                         </th>
                         <th class="datepicker-inline">
                             <textarea type="text" placeholder="备注" class="form-control picker"
@@ -73,39 +73,6 @@
             </table>
         </form>
     </div>
-    <script>
-        $(function () {
-            let $button_submit = $('input#add'); //提交按钮
-            let $date_f = $('input[name="date_f"]'); // 年月
-            let $date = $('input[name="date"]'); // 日期
-            let $name = $('input[name="name"]'); // 用途
-            let $payment = $('input[name="payment"]'); // 金额
-            let $type = $('input[name="type"]'); // 类型
-            let $note = $('textarea[name="note"]'); // 备注
-
-            var web_url = window.location.host;
-
-            $button_submit.click(function () {
-                let url = 'http://' + web_url + '/add/';
-                let data = {
-                    date_f: $date_f.val(),
-                    date: $date.val(),
-                    name: $name.val(),
-                    payment: $payment.val(),
-                    type: $type.val(),
-                    note: $note.val(),
-                };
-                $.ajax({
-                    url: url,
-                    type: "POST",
-                    data: JSON.stringify(data),
-                    // 请求内容的数据类型（前端发给后端的格式）
-                    contentType: "application/json; charset=utf-8",
-                    async: false,	// 关掉异步功能
-                })
-            })
-        })
-    </script>
 
 </div>
 
@@ -131,9 +98,9 @@
             });
 
         });
-
-
     </script>
 </div>
+
+<script src="{{ url_for('static', filename='update_date_validate.js') }}"></script>
 
 {% endblock %}

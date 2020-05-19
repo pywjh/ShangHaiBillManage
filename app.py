@@ -1,6 +1,7 @@
+import json
 from datetime import datetime
 from werkzeug.utils import redirect
-from flask import Flask, render_template, url_for, request
+from flask import Flask, render_template, url_for, request, jsonify
 
 from api import draw
 from api.get_bill_record import manager, add_record
@@ -117,15 +118,9 @@ def get_update(year, month):
 
 @app.route('/add', methods=['POST'])
 def add_bill():
-    params = request.form
-    code = add_record(params)
-    year, month = eval(params.get('date_f'))
-    if year == 'null' and month == 'null':
-        year = datetime.now().year
-        month = datetime.now().month
-    if code:
-        return redirect(url_for('get_update', year=year, month=month))
-        # get_update(str(year), str(month))
+    params = json.loads(request.data)
+    code, message = add_record(params)
+    return jsonify({'code': code, 'message': message})
 
 
 if __name__ == "__main__":

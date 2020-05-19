@@ -86,9 +86,9 @@ def add_record(params):
         # csv文件每两行中间都有一行空白行，解决办法就是写入后面加上newline=''
         with open(path, 'a+', encoding='GBK', newline='') as csv_file:
             csv_file.write(content)
-        return True
-    except Exception:
-        return False
+        return (0, '新增成功！')
+    except Exception as e:
+        return (1, e)
 
 
 if __name__ == '__main__':
