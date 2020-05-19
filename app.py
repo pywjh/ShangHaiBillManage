@@ -5,6 +5,7 @@ from flask import Flask, render_template, url_for, request, jsonify
 
 from api import draw
 from api.get_bill_record import manager, add_record
+from api.config import *
 
 app = Flask(__name__)
 
@@ -39,7 +40,8 @@ def get_month_usage():
     :return: Pie
     """
     record = manager()
-    pie = record.web_index_pie()
+    data = record.web_index_pie()
+    pie =  draw.draw_usage_pie(payout=data, budget=[('预算', BUDGET_OF_MONTH)], title="本月结余")
     return pie.dump_options()
 
 
@@ -122,6 +124,51 @@ def add_bill():
     code, message = add_record(params)
     return jsonify({'code': code, 'message': message})
 
+
+@app.route("/category_statistics", methods=['GET', 'POST'])
+def category_statistics():
+    name = 'select_month'
+    if request.method == 'GET':
+        year = 'null'
+        month = 'null'
+    else:
+        month = request.form.get(name) # 获取界面选择的日期
+        try:
+            t: datetime = datetime.strptime(month, '%Y-%m')
+        except ValueError:
+            t = datetime.now()
+        finally:
+            year = t.year
+            month = t.month
+    return redirect(url_for('get_category', year=year, month=month))
+
+
+@app.route("/category_statistics/year=<year>&month=<month>")
+def get_category(year, month):
+    name = 'select_month'
+    record = manager(year, month)
+    data, columns = record.to_table(category=True)
+    return render_template(
+        "category.html",
+        usage_chart=url_for('get_category_pie', year=year, month=month),
+        name=name,
+        data=data,
+        columns=columns)
+
+
+@app.route("/PieChart/Category/year=<year>&month=<month>")
+def get_category_pie(year, month):
+    record = manager(year, month)
+    eat, other = record.web_category_pie()
+    if year == 'null' or month == 'null':
+        year = str(datetime.now().year)
+        month = str(datetime.now().month)
+    pie = draw.draw_category_pie(
+        inner=eat,
+        outside=other,
+        inner_title=f'{year}年{month}饮食报表',
+        outer_title=f'{year}年{month}其他报表')
+    return pie.dump_options()
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

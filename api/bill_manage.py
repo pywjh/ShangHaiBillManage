@@ -322,14 +322,12 @@ class MouthCost():
 
     def category_list(self):
         """
-            将所有消费类别做成一个列表
+            将所有消费类别,金额做成一个列表
             return: category_list
         """
         category_list = []
-        eat_list = [j for i in self.eat_month.values()for j in i.items()] # 饮食类别
-        other_list = [j for i in self.other_month.values()for j in i.items()] # 其他消费类别
-        [category_list.append(i) for i, j in eat_list if j != 0]
-        [category_list.append(i) for i, j in other_list]
+        for record in self.record:
+            category_list.append((record.get('name'), record.get('payment')))
         return category_list
 
     def category_bar(self):
@@ -524,7 +522,6 @@ class MouthCost():
         # plt.show()
         plt.savefig("./{}年{}月消费种类饼状图".format(self.year, self.month_number))
 
-
     def web_index_bar(self):
         """
         网页首页的条形数据准备
@@ -543,7 +540,7 @@ class MouthCost():
     def web_index_pie(self):
         """
         网站首页饼状图
-        :return: Pie
+        :return: data -> list(tuple, tuple)
         """
         payout = self.all_total()
         surplus = round(BUDGET_OF_MONTH - payout)
@@ -551,9 +548,30 @@ class MouthCost():
             surplus = 0
 
         data = [('结余', surplus), ('支出', payout)]
-        return draw.draw_usage_pie(payout=data, budget=[('预算', BUDGET_OF_MONTH)], title="本月结余")
+        return data
 
-    def to_table(self):
+    def web_category_pie(self):
+        """
+        账单报表页的饼状图
+        :return: Pie
+        """
+        eat_cost = []
+        other_cost = []
+        names = list(set([record['name'] for record in self.record]))
+        # 同名消费汇总
+        for name in names:
+            eat_cost.append(
+                (name, sum([float(i['payment']) for i in list(filter(lambda li: li['name']==name,self.eat_month))]))
+            )
+            other_cost.append(
+                (name, sum([float(i['payment']) for i in list(filter(lambda li: li['name']==name,self.other_month))]))
+            )
+        # 限制数量(价格降序排列前30条数据)
+        eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:30]
+        other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)[:30]
+        return (eat_cost, other_cost)
+
+    def to_table(self, category=False):
         '''
         首页账单概览
         :return: ([{name1: balance1}, {name2: balance2}],  [{columns}])
@@ -567,6 +585,13 @@ class MouthCost():
             {'name': '预算结余','balance': round((BUDGET_OF_MONTH - current_month_payment), 2)},
             {'name': '本月结余','balance': round((CURRENT_SALARY - current_month_payment - RENT), 2)},
         ]
+        if category:
+            status.insert(
+                1, {'name': '饮食支出','balance': self.eat_total()}
+            )
+            status.insert(
+                2, {'name': '其他支出', 'balance': self.all_total()-self.eat_total()}
+            )
         columns = [
             {
                 "field": "name",  # which is the field's name of data key

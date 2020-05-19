@@ -33,3 +33,30 @@ def draw_usage_pie(payout, budget, title) -> Pie:
           )
 
     return pie
+
+
+def draw_category_pie(inner, outside, inner_title="分类报表", outer_title='小类报表', width=2000) -> Pie:
+    pie = Pie()
+
+    inner_radius = "70%"
+    outer_radius = "80%"
+
+    pie.add(series_name=inner_title,
+          data_pair=inner,
+          radius=["0%", inner_radius],
+          label_opts=opts.LabelOpts(position="inner"),
+          )
+    pie.add(series_name=outer_title,
+          radius=[inner_radius, outer_radius],
+          data_pair=outside,
+          label_opts=opts.LabelOpts(position="outside",
+                                    formatter="{b}:\n{c}({d}%)",
+                                    border_width=1,
+                                    border_radius=4,
+                                    ),
+          )
+
+    pie.set_global_opts(legend_opts=opts.LegendOpts(pos_left="left", orient="vertical"), )
+    pie.set_series_opts(tooltip_opts=opts.TooltipOpts(trigger="item", formatter="{a} <br/>{b}: {c} ({d}%)"))
+
+    return pie
