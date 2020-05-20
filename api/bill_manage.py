@@ -560,9 +560,12 @@ class MouthCost():
         names = list(set([record['name'] for record in self.record]))
         # 同名消费汇总
         for name in names:
-            eat_cost.append(
-                (name, sum([float(i['payment']) for i in list(filter(lambda li: li['name']==name,self.eat_month))]))
-            )
+            payment = sum([float(i['payment']) for i in list(filter(lambda li: li['name']==name,self.eat_month))])
+            if payment:
+                eat_cost.append(
+                    (name, payment)
+                )
+                continue
             other_cost.append(
                 (name, sum([float(i['payment']) for i in list(filter(lambda li: li['name']==name,self.other_month))]))
             )
