@@ -2,6 +2,7 @@ import setting
 
 import os
 import csv
+import calendar
 import datetime as dt
 import numpy as np
 
@@ -580,13 +581,18 @@ class MouthCost():
         :return: ([{name1: balance1}, {name2: balance2}],  [{columns}])
         '''
         current_month_payment = self.all_total()
+        record = list(filter(lambda li: li['date']==f"{self.year}_{self.month_number}",self.salary))[0]
+        current_salary = record['salary']
+        # 这个月剩余的天数
+        rest_date = calendar.monthrange(int(self.year),int(self.month_number))[1] - len(self.x_axis_num())
         status = [
-            {'name': '本月收入','balance': list(filter(lambda li: li['date']==f"{self.year}_{self.month_number}",self.salary))[0]['salary']},
+            {'name': '本月收入','balance': current_salary if record.get('note', False) else current_salary},
             {'name': '本月支出','balance': current_month_payment},
             {'name': '本月房租','balance': RENT},
             {'name': '本月预算','balance': BUDGET_OF_MONTH},
             {'name': '预算结余','balance': round((BUDGET_OF_MONTH - current_month_payment), 2)},
-            {'name': '本月结余','balance': round((CURRENT_SALARY - current_month_payment - RENT), 2)},
+            {'name': '日付上限','balance': round(((BUDGET_OF_MONTH - current_month_payment) / rest_date), 2)},
+            {'name': '本月结余','balance': round((eval(current_salary) - current_month_payment - RENT), 2)},
         ]
         if category:
             status.insert(
