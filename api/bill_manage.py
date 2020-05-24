@@ -15,7 +15,7 @@ from datetime import datetime
 
 from cost_record import *
 from .config import *
-from . import draw
+
 
 if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
     from wordcloud import WordCloud
@@ -584,7 +584,14 @@ class MouthCost():
         record = list(filter(lambda li: li['date']==f"{self.year}_{self.month_number}",self.salary))[0]
         current_salary = record['salary']
         # 这个月剩余的天数
-        rest_date = calendar.monthrange(int(self.year),int(self.month_number))[1] - len(self.x_axis_num())
+        day = datetime.now().day
+        if day > PAY_SALARY_DAY:
+            rest_date = calendar.monthrange(
+                year=int(self.year),
+                month=int(self.month_number)
+            )[1] - int(self.x_axis_num()[-1].split('_')[-1]) + 15
+        else:
+            rest_date = 15 - day
         status = [
             {'name': '本月收入','balance': current_salary if record.get('note', False) else current_salary},
             {'name': '本月支出','balance': current_month_payment},

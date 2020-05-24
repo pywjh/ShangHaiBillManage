@@ -7,7 +7,7 @@ $(function () {
     let $date = $('input[name="date"]'); // 日期
     let $name = $('input[name="name"]'); // 用途
     let $payment = $('input[name="payment"]'); // 金额
-    let $type = $('input[name="type"]'); // 类型
+    // let $type = $('input[name="type"]'); // 类型
     let $note = $('textarea[name="note"]'); // 备注
 
     var web_url = window.location.host;
@@ -37,12 +37,13 @@ $(function () {
         if  (fn_check_payment() !== 'success'){
             return
         }
+        var type = $('input[name="type"]:checked').val();
         let data = {
             'date': $date.val(),
             'date_f': $date_f.val(),
             'name': $name.val(),
             'payment': $payment.val(),
-            'type': $type.val(),
+            'type': type,
             'note': $note.val(),
         };
         $.ajax({
