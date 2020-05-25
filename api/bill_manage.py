@@ -21,7 +21,7 @@ if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
     from wordcloud import WordCloud
 
 
-class MouthCost():
+class MouthCost(object):
     """
         每天的消费情况统计
         每天的饮食消费必须记录，统计图日期以饮食日期为主，其他消费可以为空
@@ -91,22 +91,8 @@ class MouthCost():
             self.pie()
 
     def salary(self):
-        encoding_list = ('GBK', 'UTF-8')
         path = '{}/cost_record/salary_record.csv'.format(self.base_dir[:-4])
-        for endcoding in encoding_list:
-            try:
-                with open(path, encoding=endcoding) as csv_file:
-
-                    reader = csv.DictReader(csv_file)
-                    return [row for row in reader if row]
-
-            except UnicodeDecodeError:
-                print("Not Support This File Encoding!!")
-            except FileNotFoundError:
-                print('未找到账单文件：{}'.format(path.split('/')[-1]))
-            except Exception as e:
-                print(e)
-        return None
+        return _read_csv(path)
 
     def split_record(self, record):
         """
@@ -526,7 +512,9 @@ class MouthCost():
     def web_index_bar(self):
         """
         网页首页的条形数据准备
-        :return: x, y
+        :return:
+            x = [月_日, 月_日, 月_日, ....]
+            y = [(title1, [num1, num2, num3, num4, ...)], (title2, [num1, num2, num3, num4, ...)]
         """
         x = self.x_axis_zh()
         eat_y = self.get_eat_y()
@@ -541,7 +529,8 @@ class MouthCost():
     def web_index_pie(self):
         """
         网站首页饼状图
-        :return: data -> list(tuple, tuple)
+        :return:
+            data -> list [(title1, num1), (title2, num2)]
         """
         payout = self.all_total()
         surplus = round(BUDGET_OF_MONTH - payout)
@@ -660,11 +649,44 @@ class MouthCost():
 
         return details_bill, columns
 
+    def annual(year):
+        """
+        年度统计数据汇总
+        :return x_date x轴  y轴工资  cost_list 总消费列表
+        """
+        salary_path = '{}/cost_record/salary_record.csv'.format(base_dir[:-4])
+        salary_result = _read_csv(salary_path)
+
+        x_date = [f"{row['date'].split('_')[0]}年{row['date'].split('_')[1]}月" for row in salary_result if row]
+        y_salary = []
+        y_salary.append(('收入', [eval(row['salary']) for row in salary_result if row]))
+
+        csv_files = os.listdir('{}/cost_record'.format(base_dir[:-4]))
+        csv_files = filter(lambda l: year in l, csv_files)
+
+        cost_list = []
+        for file in csv_files:
+            cost_path = '{}/cost_record/{}'.format(base_dir[:-4], file)
+            cost_list.append(_read_csv(cost_path))
+        return x_date, y_salary, cost_list, csv_files
+
+    def web_annual_bar(self):
+        """
+        年度收支条形图
+        :return: x, y
+        """
+        x_date, y_salary, cost_list, csv_files = annual(year=self.year)
+
+
+
+
 
 
 
 
 if __name__ == '__main__':
+    from api.get_bill_record import _read_csv, annual
+
 
     record = MouthCost(eat_month=eat_month_20_4, other_month=other_month_20_4) # 实例化
     record() # 运行程序

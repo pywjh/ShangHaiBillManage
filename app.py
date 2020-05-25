@@ -170,5 +170,42 @@ def get_category_pie(year, month):
         outer_title=f'{year}年{month}其他报表')
     return pie.dump_options()
 
+
+@app.route('/annual', methods=['GET', 'POST'])
+def annual():
+    name = 'select_month'
+    if request.method == 'GET':
+        year = 'null'
+    else:
+        month = request.form.get(name) # 获取界面选择的日期
+        try:
+            t: datetime = datetime.strptime(month, '%Y-%m')
+        except ValueError:
+            t = datetime.now()
+        finally:
+            year = t.year
+    return redirect(url_for('annual_with_year', year=year))
+
+
+@app.route('/annual/year=<year>')
+def annual_with_year(year):
+    name = 'select_year'
+
+    # status, columns = to_table(api.account_status_per_year(year, prefix="{}年".format(year)))
+    return render_template("annual.html", name=name,
+                           chart_url=url_for('get_annual_bar', year=year),
+                           # pie_url=url_for('get_annual_pie', year=year),
+                           # data=status, columns=columns
+                           )
+
+
+@app.route("/barChart/year=<year>")
+def get_annual_bar(year):
+    record = manager(year=year)
+    a = 1
+    c = api.draw_balance_bar_per_month(year=year)
+    return c.dump_options()
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

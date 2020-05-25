@@ -17,9 +17,9 @@ base_dir = os.path.dirname(__file__)
 
 
 def _read_csv(path, encoding_list=('GBK', 'UTF-8')):
-    for endcoding in encoding_list:
+    for encoding in encoding_list:
         try:
-            with open(path, encoding=endcoding) as csv_file:
+            with open(path, encoding=encoding) as csv_file:
 
                 reader = csv.DictReader(csv_file)
                 return [row for row in reader if row]
@@ -70,6 +70,7 @@ def manager(year=None, month=None):
         return record
     return None
 
+
 def add_record(params):
     try:
         date = params.get('date')
@@ -91,5 +92,27 @@ def add_record(params):
         return (1, e)
 
 
+def annual(year):
+    """
+    年度统计数据汇总
+    :return x_date x轴  y轴工资  cost_list 总消费列表
+    """
+    salary_path = '{}/cost_record/salary_record.csv'.format(base_dir[:-4])
+    salary_result = _read_csv(salary_path)
+
+    x_date = [f"{row['date'].split('_')[0]}年{row['date'].split('_')[1]}月" for row in salary_result if row]
+    y_salary = []
+    y_salary.append(('收入', [eval(row['salary']) for row in salary_result if row]))
+
+    csv_files = os.listdir('{}/cost_record'.format(base_dir[:-4]))
+    csv_files = filter(lambda l: year in l, csv_files)
+
+    cost_list = []
+    for file in csv_files:
+        cost_path = '{}/cost_record/{}'.format(base_dir[:-4], file)
+        cost_list.append(_read_csv(cost_path))
+    return x_date, y_salary, cost_list, csv_files
+
+
 if __name__ == '__main__':
-    print(manager('2020', '4'))
+    annual('2020')
