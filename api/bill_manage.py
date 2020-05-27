@@ -13,9 +13,6 @@ from win32api import GetSystemMetrics
 from PIL import Image
 from datetime import datetime
 
-from cost_record import *
-from .config import *
-
 
 if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
     from wordcloud import WordCloud
@@ -33,17 +30,20 @@ class MouthCost(object):
         生成消费类别的云图                               
     """
     def __init__(self, record, year, month, *args, **kwargs):
-        self.base_dir=os.path.dirname(__file__)
+        self.base_dir = os.path.dirname(__file__)
         self.eat_month, self.other_month = self.split_record(record)
         self.record = record
-        self.salary = self.salary()
+        self.other_record = MouthCost.read_other_record(self.base_dir[:-4])
         self.font = setting.FONT # 云图所使用的字体
         self.year = str(dt.date.today().year) if not year or year=='null' else year
         self.my_font = font_manager.FontProperties(fname=self.font) # 统计图所使用的字体包
         self.bar_width = GetSystemMetrics(0) / 100  # 折线图宽
         self.bar_height = GetSystemMetrics(1) / 100  # 折线图高
         self.bar_dpi = 200  # 图片分辨率
-        self.month_number = str(dt.date.today().month) if not month or month=='null' else month#
+        self.month_number = str(dt.date.today().month) if not month or month=='null' else month
+        self.current_fix_data = MouthCost.current_fix_data(year=self.year,
+                                                           month=self.month_number,
+                                                           other_record=self.other_record)
         # 当前统计的月份
         # self.y_step = setting.Y_STEP # x轴刻度步长
         # self.title_size = setting.TITLE_SIZE # 标题字体大小
@@ -90,9 +90,48 @@ class MouthCost(object):
             print('正在生成消费种类饼状图...')
             self.pie()
 
-    def salary(self):
-        path = '{}/cost_record/salary_record.csv'.format(self.base_dir[:-4])
-        return _read_csv(path)
+    @classmethod
+    def _read_csv(cls, path, encoding_list=('GBK', 'UTF-8')):
+        for encoding in encoding_list:
+            try:
+                with open(path, encoding=encoding) as csv_file:
+
+                    reader = csv.DictReader(csv_file)
+                    return [row for row in reader if row]
+
+            except UnicodeDecodeError:
+                print("Not Support This File Encoding!!")
+            except FileNotFoundError:
+                print('未找到账单文件：{}'.format(path.split('/')[-1]))
+            except Exception as e:
+                print(e)
+        return None
+
+    @classmethod
+    def current_fix_data(cls, other_record, year=dt.date.today().year,month=dt.date.today().month):
+        year = str(year)
+        month = str(month)
+        res = list(filter(lambda li: li['date'] == f"{year}_{month}", other_record))
+        if len(res) == 1:
+            return res[0]
+
+    @classmethod
+    def read_other_record(cls, base_dir):
+        """读取其他数据记录表"""
+        path = '{}/cost_record/other_record.csv'.format(base_dir)
+        return MouthCost._read_csv(path)
+
+    def current_rest_day(self):
+        """当月目前所剩下的天数，基于发工资日"""
+        day = datetime.now().day
+        if day > int(self.current_fix_data['salary_day']):
+            rest_date = calendar.monthrange(
+                year=int(self.year),
+                month=int(self.month_number)
+            )[1] - int(self.x_axis_num()[-1].split('_')[-1]) + 15
+        else:
+            rest_date = 15 - day
+        return rest_date
 
     def split_record(self, record):
         """
@@ -533,7 +572,7 @@ class MouthCost(object):
             data -> list [(title1, num1), (title2, num2)]
         """
         payout = self.all_total()
-        surplus = round(BUDGET_OF_MONTH - payout)
+        surplus = round(float(self.current_fix_data['budget']) - payout)
         if surplus < 0:
             surplus = 0
 
@@ -570,25 +609,23 @@ class MouthCost(object):
         :return: ([{name1: balance1}, {name2: balance2}],  [{columns}])
         '''
         current_month_payment = self.all_total()
-        record = list(filter(lambda li: li['date']==f"{self.year}_{self.month_number}",self.salary))[0]
-        current_salary = record['salary']
+        # 当月工资数据
+        record = self.current_fix_data
+        current_salary = record['salary'] # 当月工资
+        rent = float(record['rent']) # 当月房租
+        budget = float(record['budget']) # 当月房租
+        save = float(record['save']) # 当月存储
         # 这个月剩余的天数
-        day = datetime.now().day
-        if day > PAY_SALARY_DAY:
-            rest_date = calendar.monthrange(
-                year=int(self.year),
-                month=int(self.month_number)
-            )[1] - int(self.x_axis_num()[-1].split('_')[-1]) + 15
-        else:
-            rest_date = 15 - day
+        rest_date = self.current_rest_day()
         status = [
             {'name': '本月收入','balance': current_salary if record.get('note', False) else current_salary},
             {'name': '本月支出','balance': current_month_payment},
-            {'name': '本月房租','balance': RENT},
-            {'name': '本月预算','balance': BUDGET_OF_MONTH},
-            {'name': '预算结余','balance': round((BUDGET_OF_MONTH - current_month_payment), 2)},
-            {'name': '日付上限','balance': round(((BUDGET_OF_MONTH - current_month_payment) / rest_date), 2)},
-            {'name': '本月结余','balance': round((eval(current_salary) - current_month_payment - RENT), 2)},
+            {'name': '本月房租','balance': rent},
+            {'name': '本月预算','balance': budget},
+            {'name': '预算结余','balance': round((budget - current_month_payment), 2)},
+            {'name': '日付上限','balance': round(((budget - current_month_payment) / rest_date), 2)},
+            {'name': '月储金额','balance': float(save)},
+            {'name': '本月结余','balance': round((eval(current_salary)-current_month_payment-rent-float(save)), 2)},
         ]
         if category:
             status.insert(
@@ -654,20 +691,20 @@ class MouthCost(object):
         年度统计数据汇总
         :return x_date x轴  y轴工资  cost_list 总消费列表
         """
-        salary_path = '{}/cost_record/salary_record.csv'.format(base_dir[:-4])
-        salary_result = _read_csv(salary_path)
+        salary_path = '{}/cost_record/other_record.csv'.format(self.base_dir[:-4])
+        salary_result = MouthCost._read_csv(salary_path)
 
         x_date = [f"{row['date'].split('_')[0]}年{row['date'].split('_')[1]}月" for row in salary_result if row]
         y_salary = []
         y_salary.append(('收入', [eval(row['salary']) for row in salary_result if row]))
 
-        csv_files = os.listdir('{}/cost_record'.format(base_dir[:-4]))
+        csv_files = os.listdir('{}/cost_record'.format(self.base_dir[:-4]))
         csv_files = filter(lambda l: year in l, csv_files)
 
         cost_list = []
         for file in csv_files:
-            cost_path = '{}/cost_record/{}'.format(base_dir[:-4], file)
-            cost_list.append(_read_csv(cost_path))
+            cost_path = '{}/cost_record/{}'.format(self.base_dir[:-4], file)
+            cost_list.append(MouthCost._read_csv(cost_path))
         return x_date, y_salary, cost_list, csv_files
 
     def web_annual_bar(self):
@@ -685,11 +722,7 @@ class MouthCost(object):
 
 
 if __name__ == '__main__':
-    from api.get_bill_record import _read_csv, annual
-
-
-    record = MouthCost(eat_month=eat_month_20_4, other_month=other_month_20_4) # 实例化
-    record() # 运行程序
+    MouthCost.test([1,2,3], '2020', '5')
 
 
 

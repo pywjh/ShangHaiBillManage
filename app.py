@@ -1,19 +1,23 @@
+import os
 import json
 from datetime import datetime
 from werkzeug.utils import redirect
 from flask import Flask, render_template, url_for, request, jsonify
 
 from api import draw
-from api.get_bill_record import manager, add_record
-from api.config import *
+from api.get_bill_record import data_aggregation, add_record
+from api.bill_manage import MouthCost
 
 app = Flask(__name__)
+
+other_record = MouthCost.read_other_record(os.path.dirname(__file__))
 
 
 @app.route("/")
 @app.route("/index")
 def index():
-    record = manager()
+    record, year, month = data_aggregation()
+    record = MouthCost(record, year, month)
     status, columns = record.to_table()
     return render_template("index.html",
                            chart_url=url_for('get_current_month_bar'),
@@ -27,7 +31,8 @@ def get_current_month_bar():
     首页条形统计图
     :return: Bar
     """
-    record = manager()
+    record, year, month = data_aggregation()
+    record = MouthCost(record, year, month)
     x, y = record.web_index_bar()
     bar = draw.draw_balance_bar(xaxis=x, yaxis=y)
     return bar.dump_options()
@@ -39,9 +44,11 @@ def get_month_usage():
     首页饼状图
     :return: Pie
     """
-    record = manager()
+    budget = float(MouthCost.current_fix_data(other_record)['budget'])
+    record, year, month = data_aggregation()
+    record = MouthCost(record, year, month)
     data = record.web_index_pie()
-    pie =  draw.draw_usage_pie(payout=data, budget=[('预算', BUDGET_OF_MONTH)], title="本月结余")
+    pie =  draw.draw_usage_pie(payout=data, budget=[('预算', budget)], title="本月结余")
     return pie.dump_options()
 
 
@@ -67,7 +74,8 @@ def details():
 @app.route("/details/year=<year>&month=<month>")
 def get_details(year, month):
     name = 'select_month'
-    record = manager(year, month)
+    record, year, month = data_aggregation(year, month)
+    record = MouthCost(record, year, month)
     data, columns = [], []
     if record:
         data, columns = record.to_detail_table()
@@ -79,7 +87,8 @@ def get_details(year, month):
 
 @app.route("/barChart/year=<year>&month=<month>")
 def get_bar_chart(year, month):
-    record = manager(year, month)
+    record, year, month = data_aggregation(year, month)
+    record = MouthCost(record, year, month)
     if record:
         x, y = record.web_index_bar()
     else:
@@ -110,7 +119,8 @@ def update():
 @app.route("/update/year=<year>&month=<month>")
 def get_update(year, month):
     name = 'select_month'
-    record = manager(year, month)
+    record, year, month = data_aggregation(year, month)
+    record = MouthCost(record, year, month)
     data, columns = [], []
     if record:
         data, columns = record.to_detail_table(update=True)
@@ -146,7 +156,8 @@ def category_statistics():
 @app.route("/category_statistics/year=<year>&month=<month>")
 def get_category(year, month):
     name = 'select_month'
-    record = manager(year, month)
+    record, year, month = data_aggregation(year, month)
+    record = MouthCost(record, year, month)
     data, columns = record.to_table(category=True)
     return render_template(
         "category.html",
@@ -158,7 +169,8 @@ def get_category(year, month):
 
 @app.route("/PieChart/Category/year=<year>&month=<month>")
 def get_category_pie(year, month):
-    record = manager(year, month)
+    record, year, month = data_aggregation(year, month)
+    record = MouthCost(record, year, month)
     eat, other = record.web_category_pie()
     if year == 'null' or month == 'null':
         year = str(datetime.now().year)
@@ -201,7 +213,8 @@ def annual_with_year(year):
 
 @app.route("/barChart/year=<year>")
 def get_annual_bar(year):
-    record = manager(year=year)
+    record, year, month = data_aggregation()
+    record = MouthCost(record, year, month)
     a = 1
     c = api.draw_balance_bar_per_month(year=year)
     return c.dump_options()

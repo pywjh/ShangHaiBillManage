@@ -11,26 +11,9 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
 from api.bill_manage import MouthCost
-from api.config import *
 
 base_dir = os.path.dirname(__file__)
-
-
-def _read_csv(path, encoding_list=('GBK', 'UTF-8')):
-    for encoding in encoding_list:
-        try:
-            with open(path, encoding=encoding) as csv_file:
-
-                reader = csv.DictReader(csv_file)
-                return [row for row in reader if row]
-
-        except UnicodeDecodeError:
-            print("Not Support This File Encoding!!")
-        except FileNotFoundError:
-            print('未找到账单文件：{}'.format(path.split('/')[-1]))
-        except Exception as e:
-            print(e)
-    return None
+other_record = MouthCost.read_other_record(base_dir[:-4])
 
 
 def get_date(year='null', month='null', day=1):
@@ -44,7 +27,8 @@ def get_date(year='null', month='null', day=1):
     if  year in ('null', None) or  month in ('null', None):
         year = str(dt.date.today().year)
         month = dt.date.today().month
-        if dt.date.today().day < PAY_SALARY_DAY:
+        current_fix_data = MouthCost.current_fix_data(other_record)
+        if dt.date.today().day < int(current_fix_data['salary_day']):
             month = str((dt.date(dt.date.today().year, int(month),
                                 day) - relativedelta(months=1)).month)
         else:
@@ -53,7 +37,7 @@ def get_date(year='null', month='null', day=1):
         year = year
         month = month
     path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
-    record = _read_csv(path)
+    record = MouthCost._read_csv(path)
     if record:
         record.sort(key=lambda date: datetime(
                     year=int(year),
@@ -63,12 +47,10 @@ def get_date(year='null', month='null', day=1):
         return record
 
 
-def manager(year=None, month=None):
+def data_aggregation(year=None, month=None):
+    """数据汇总"""
     records = get_date(year=year, month=month)
-    if records:
-        record = MouthCost(record=records, year=year, month=month)
-        return record
-    return None
+    return records, year, month
 
 
 def add_record(params):
@@ -97,7 +79,7 @@ def annual(year):
     年度统计数据汇总
     :return x_date x轴  y轴工资  cost_list 总消费列表
     """
-    salary_path = '{}/cost_record/salary_record.csv'.format(base_dir[:-4])
+    salary_path = '{}/cost_record/other_record.csv'.format(base_dir[:-4])
     salary_result = _read_csv(salary_path)
 
     x_date = [f"{row['date'].split('_')[0]}年{row['date'].split('_')[1]}月" for row in salary_result if row]
