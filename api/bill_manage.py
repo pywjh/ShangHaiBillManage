@@ -589,18 +589,20 @@ class MouthCost(object):
         names = list(set([record['name'] for record in self.record]))
         # 同名消费汇总
         for name in names:
-            payment = sum([float(i['payment']) for i in list(filter(lambda li: li['name']==name,self.eat_month))])
+            payment = round(sum([float(i['payment']) for i in list(
+                filter(lambda li: li['name']==name,self.eat_month)
+            )]), 2)
             if payment:
-                eat_cost.append(
-                    (name, payment)
-                )
+                eat_cost.append((name, payment))
                 continue
             other_cost.append(
-                (name, sum([float(i['payment']) for i in list(filter(lambda li: li['name']==name,self.other_month))]))
+                (name, round(sum([float(i['payment']) for i in list(
+                    filter(lambda li: li['name']==name, self.other_month)
+                )])), 2)
             )
         # 限制数量(价格降序排列前30条数据)
-        eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:30]
-        other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)[:30]
+        eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_EAT]
+        other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_OTHER]
         return (eat_cost, other_cost)
 
     def to_table(self, category=False):
@@ -625,14 +627,14 @@ class MouthCost(object):
             {'name': '预算结余','balance': round((budget - current_month_payment), 2)},
             {'name': '日付上限','balance': round(((budget - current_month_payment) / rest_date), 2)},
             {'name': '月储金额','balance': float(save)},
-            {'name': '本月结余','balance': round((eval(current_salary)-current_month_payment-rent-float(save)), 2)},
+            {'name': '本月结余','balance': round((eval(current_salary)-current_month_payment-rent), 2)},
         ]
         if category:
             status.insert(
                 1, {'name': '饮食支出','balance': self.eat_total()}
             )
             status.insert(
-                2, {'name': '其他支出', 'balance': self.all_total()-self.eat_total()}
+                2, {'name': '其他支出', 'balance': round(self.all_total()-self.eat_total(), 2)}
             )
         columns = [
             {
@@ -676,17 +678,18 @@ class MouthCost(object):
                 "sortable": False,
             },
         ]
+        # 如果是新增数据页面
         if update:
             columns.insert(3, {
                 "field": "type",
                 "title": "类型",
                 "sortable": False,
             })
-            return details_bill[::-1][:20], columns
+            return details_bill[::-1][:setting.NUMBER_UPDATE_TABLE], columns
 
         return details_bill, columns
 
-    def annual(year):
+    def annual(self, year):
         """
         年度统计数据汇总
         :return x_date x轴  y轴工资  cost_list 总消费列表

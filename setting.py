@@ -58,6 +58,17 @@ BACKGROUND_COLOR = 'black'
 
 # **************************************
 
+# web端消费类别与金额饼状图，饮食类型数量展示限制（最多展示多少个）
+NUMBER_WEB_CATEGORY_PIE_EAT = 30
+
+# web端消费类别与金额饼状图，其他类型数量展示限制（最多展示多少个）
+NUMBER_WEB_CATEGORY_PIE_OTHER = 30
+
+# 数据新增页面详情表倒序显示的最大数量限制
+NUMBER_UPDATE_TABLE = 20
+
+# **************************************
+
 # 是否生成消费折线图
 MERGE_PLOT = True
 
