@@ -598,7 +598,7 @@ class MouthCost(object):
             other_cost.append(
                 (name, round(sum([float(i['payment']) for i in list(
                     filter(lambda li: li['name']==name, self.other_month)
-                )])), 2)
+                )]), 2))
             )
         # 限制数量(价格降序排列前30条数据)
         eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_EAT]
