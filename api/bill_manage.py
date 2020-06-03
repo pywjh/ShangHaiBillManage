@@ -93,13 +93,18 @@ class MouthCost(object):
 
     @classmethod
     def get_special_date(cls, year='null', month='null', day=1):
+        if dt.date.today().day == 1 and day == 1:
+            day = 1
+        else:
+            day = int(day)
+
         base_dir = os.path.dirname(__file__)
         other_record = MouthCost.read_other_record(base_dir[:-4])
         if year in ('null', None) or month in ('null', None):
             year = str(dt.date.today().year)
             month = dt.date.today().month
             current_fix_data = MouthCost.current_fix_data(other_record)
-            if dt.date.today().day < int(current_fix_data['salary_day']):
+            if day < int(current_fix_data['salary_day']):
                 month = str((dt.date(dt.date.today().year, int(month),
                                      day) - relativedelta(months=1)).month)
             else:

@@ -50,7 +50,13 @@ def add_record(params):
         type = params.get('type')
         note = params.get('note')
         year, month = eval(params.get('date_f'))
-        year, month = MouthCost.get_special_date(year=year, month=month)
+        month = date.split('_')[0]
+        day = date.split('_')[-1]
+        year, month = MouthCost.get_special_date(
+            year=year,
+            month=month,
+            day=day
+        )
         path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
         content = f'\n{date},{name},{payment},{type},{note}'
         # csv文件每两行中间都有一行空白行，解决办法就是写入后面加上newline=''
