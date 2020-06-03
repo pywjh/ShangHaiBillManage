@@ -12,6 +12,7 @@ from collections import Counter
 from win32api import GetSystemMetrics
 from PIL import Image
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 
 if setting.CLOUDWORD_SHAPE or setting.COST_CLOUDWORD:
@@ -91,6 +92,24 @@ class MouthCost(object):
             self.pie()
 
     @classmethod
+    def get_special_date(cls, year='null', month='null', day=1):
+        base_dir = os.path.dirname(__file__)
+        other_record = MouthCost.read_other_record(base_dir[:-4])
+        if year in ('null', None) or month in ('null', None):
+            year = str(dt.date.today().year)
+            month = dt.date.today().month
+            current_fix_data = MouthCost.current_fix_data(other_record)
+            if dt.date.today().day < int(current_fix_data['salary_day']):
+                month = str((dt.date(dt.date.today().year, int(month),
+                                     day) - relativedelta(months=1)).month)
+            else:
+                month = str(month)
+        else:
+            year = year
+            month = month
+        return year, month
+
+    @classmethod
     def _read_csv(cls, path, encoding_list=('GBK', 'UTF-8')):
         for encoding in encoding_list:
             try:
@@ -109,9 +128,17 @@ class MouthCost(object):
 
     @classmethod
     def current_fix_data(cls, other_record, year=dt.date.today().year,month=dt.date.today().month):
-        year = str(year)
-        month = str(month)
+        """获取对应时间的固定信息表
+        因为发工资时间存在了表里
+        查询指定时间发工资时间就会递归
+        这里采取的方法就是查询对应的指定时间，不存在就取上一个月的"""
         res = list(filter(lambda li: li['date'] == f"{year}_{month}", other_record))
+        if not res:
+            month = str((dt.date(
+                int(year), int(month),1
+            ) - relativedelta(months=1)).month)
+        res = list(
+            filter(lambda li: li['date'] == f"{year}_{month}", other_record))
         if len(res) == 1:
             return res[0]
 
@@ -687,7 +714,7 @@ class MouthCost(object):
             })
             return details_bill[::-1][:setting.NUMBER_UPDATE_TABLE], columns
 
-        return details_bill, columns
+        return details_bill[::-1], columns
 
     def annual(self, year):
         """

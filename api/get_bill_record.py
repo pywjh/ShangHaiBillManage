@@ -16,7 +16,7 @@ base_dir = os.path.dirname(__file__)
 other_record = MouthCost.read_other_record(base_dir[:-4])
 
 
-def get_date(year='null', month='null', day=1):
+def get_date(year='null', month='null'):
     """
     这里的逻辑比较个性化：
         因为本人15号发工资，所以做的账单是从15号开始到次月15号结束
@@ -24,18 +24,7 @@ def get_date(year='null', month='null', day=1):
         手动选择的话，就没有逻辑
     :return: Dict
     """
-    if  year in ('null', None) or  month in ('null', None):
-        year = str(dt.date.today().year)
-        month = dt.date.today().month
-        current_fix_data = MouthCost.current_fix_data(other_record)
-        if dt.date.today().day < int(current_fix_data['salary_day']):
-            month = str((dt.date(dt.date.today().year, int(month),
-                                day) - relativedelta(months=1)).month)
-        else:
-            month = str(month)
-    else:
-        year = year
-        month = month
+    year, month = MouthCost.get_special_date(year=year, month=month)
     path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
     record = MouthCost._read_csv(path)
     if record:
@@ -61,9 +50,7 @@ def add_record(params):
         type = params.get('type')
         note = params.get('note')
         year, month = eval(params.get('date_f'))
-        if year == 'null' and month == 'null':
-            year = datetime.now().year
-            month = datetime.now().month
+        year, month = MouthCost.get_special_date(year=year, month=month)
         path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
         content = f'\n{date},{name},{payment},{type},{note}'
         # csv文件每两行中间都有一行空白行，解决办法就是写入后面加上newline=''
@@ -80,7 +67,7 @@ def annual(year):
     :return x_date x轴  y轴工资  cost_list 总消费列表
     """
     salary_path = '{}/cost_record/other_record.csv'.format(base_dir[:-4])
-    salary_result = _read_csv(salary_path)
+    salary_result = MouthCost._read_csv(salary_path)
 
     x_date = [f"{row['date'].split('_')[0]}年{row['date'].split('_')[1]}月" for row in salary_result if row]
     y_salary = []
@@ -92,7 +79,7 @@ def annual(year):
     cost_list = []
     for file in csv_files:
         cost_path = '{}/cost_record/{}'.format(base_dir[:-4], file)
-        cost_list.append(_read_csv(cost_path))
+        cost_list.append(MouthCost._read_csv(cost_path))
     return x_date, y_salary, cost_list, csv_files
 
 
