@@ -25,7 +25,7 @@ def get_date(year='null', month='null'):
     :return: Dict
     """
     year, month = MouthCost.get_special_date(year=year, month=month)
-    path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
+    path = f'{base_dir[:-4]}/cost_record/{year}/{year}_{month}.csv'
     record = MouthCost._read_csv(path)
     if record:
         record.sort(key=lambda date: datetime(
@@ -57,7 +57,7 @@ def add_record(params):
             month=month,
             day=day
         )
-        path = '{}/cost_record/{}_{}.csv'.format(base_dir[:-4], year, month)
+        path = f'{base_dir[:-4]}/cost_record/{year}/{year}_{month}.csv'
         content = f'\n{date},{name},{payment},{type},{note}'
         # csv文件每两行中间都有一行空白行，解决办法就是写入后面加上newline=''
         with open(path, 'a+', encoding='GBK', newline='') as csv_file:

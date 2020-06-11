@@ -215,9 +215,9 @@ def annual_with_year(year):
 def get_annual_bar(year):
     record, year, month = data_aggregation()
     record = MouthCost(record, year, month)
-    a = 1
-    c = api.draw_balance_bar_per_month(year=year)
-    return c.dump_options()
+    x, y = record.web_annual_bar()
+    # c = api.draw_balance_bar_per_month(year=year)
+    # return c.dump_options()
 
 
 if __name__ == "__main__":

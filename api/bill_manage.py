@@ -99,19 +99,20 @@ class MouthCost(object):
             day = int(day)
 
         base_dir = os.path.dirname(__file__)
+
         other_record = MouthCost.read_other_record(base_dir[:-4])
-        if year in ('null', None) or month in ('null', None):
-            year = str(dt.date.today().year)
-            month = dt.date.today().month
-            current_fix_data = MouthCost.current_fix_data(other_record)
-            if day < int(current_fix_data['salary_day']):
-                month = str((dt.date(dt.date.today().year, int(month),
-                                     day) - relativedelta(months=1)).month)
-            else:
-                month = str(month)
+
+        year = str(dt.date.today().year) if year in ('null', None) else year
+
+        month = dt.date.today().month if month in ('null', None) else month
+
+        current_fix_data = MouthCost.current_fix_data(other_record, year=year, month=month)
+
+        if current_fix_data and day < int(current_fix_data['salary_day']):
+            month = str((dt.date(dt.date.today().year, int(month), day) - relativedelta(months=1)).month)
         else:
-            year = year
-            month = month
+            month = str(month)
+
         return year, month
 
     @classmethod
@@ -172,9 +173,11 @@ class MouthCost(object):
         :return: eat_month_data -> list(dict),
                  other_month_data -> list(dict)
         """
-        eat_month_data = list(filter(lambda li: li['type'] == 'eat', record))
-        other_month_data = list(
-            filter(lambda li: li['type'] == 'other', record))
+        eat_month_data = other_month_data = []
+        if record:
+            eat_month_data = list(filter(lambda li: li['type'] == 'eat', record))
+            other_month_data = list(
+                filter(lambda li: li['type'] == 'other', record))
         return eat_month_data, other_month_data
 
     def get_weekday(self, no_format_date):
@@ -220,7 +223,8 @@ class MouthCost(object):
         :return: list(dict, dict)
         """
         bills = []
-        for rec in self.record:
+        record = self.record or []
+        for rec in record:
             bills.append({
                 'date': self.year + '年' + self.format_date(rec.get('date', '')),
                 'name': rec.get('name', ''),
@@ -747,7 +751,7 @@ class MouthCost(object):
         年度收支条形图
         :return: x, y
         """
-        x_date, y_salary, cost_list, csv_files = annual(year=self.year)
+        x_date, y_salary, cost_list, csv_files = self.annual(self.year)
 
 
 
@@ -758,7 +762,6 @@ class MouthCost(object):
 
 if __name__ == '__main__':
     MouthCost.test([1,2,3], '2020', '5')
-
 
 
     
