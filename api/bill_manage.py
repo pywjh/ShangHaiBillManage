@@ -584,12 +584,19 @@ class MouthCost(object):
         # plt.show()
         plt.savefig("./{}年{}月消费种类饼状图".format(self.year, self.month_number))
 
+    def get_rent(self, date):
+        """获取指定时间的月份的房租"""
+        if list(filter(lambda l: l['date']==date, self.other_record)):
+            rent = list(filter(lambda l: l['date']==date, self.other_record))[0]['rent']
+            return float(rent)
+        return 0
+
     def web_index_bar(self):
         """
         网页首页的条形数据准备
         :return:
             x = [月_日, 月_日, 月_日, ....]
-            y = [(title1, [num1, num2, num3, num4, ...)], (title2, [num1, num2, num3, num4, ...)]
+            y = [(title1, [num1, num2, num3, num4, ...]), (title2, [num1, num2, num3, num4, ...])]
         """
         x = self.x_axis_zh()
         eat_y = self.get_eat_y()
@@ -625,17 +632,18 @@ class MouthCost(object):
         names = list(set([record['name'] for record in self.record]))
         # 同名消费汇总
         for name in names:
-            payment = round(sum([float(i['payment']) for i in list(
-                filter(lambda li: li['name']==name,self.eat_month)
-            )]), 2)
-            if payment:
-                eat_cost.append((name, payment))
-                continue
-            other_cost.append(
-                (name, round(sum([float(i['payment']) for i in list(
-                    filter(lambda li: li['name']==name, self.other_month)
-                )]), 2))
-            )
+            if name in [i['name'] for i in self.eat_month]:
+                eat_cost.append((
+                    name, round(sum([float(i['payment']) for i in list(
+                        filter(lambda li: li['name'] == name, self.eat_month)
+                    )]), 2))
+                )
+            if name in [i['name'] for i in self.other_month]:
+                other_cost.append(
+                    (name, round(sum([float(i['payment']) for i in list(
+                        filter(lambda li: li['name']==name, self.other_month)
+                    )]), 2))
+                )
         # 限制数量(价格降序排列前30条数据)
         eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_EAT]
         other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_OTHER]
@@ -725,33 +733,45 @@ class MouthCost(object):
 
         return details_bill[::-1], columns
 
-    def annual(self, year):
+    def web_annual_bar(self, year):
         """
         年度统计数据汇总
         :return x_date x轴  y轴工资  cost_list 总消费列表
+            x = [年_月, 年_月, 年_月, ....]
+            y = [(title1, num1), (title2, num2)]
         """
-        salary_path = '{}/cost_record/other_record.csv'.format(self.base_dir[:-4])
-        salary_result = MouthCost._read_csv(salary_path)
+        x_date = []
+        y_amount = [('支出', []), ('收入', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])]
 
-        x_date = [f"{row['date'].split('_')[0]}年{row['date'].split('_')[1]}月" for row in salary_result if row]
-        y_salary = []
-        y_salary.append(('收入', [eval(row['salary']) for row in salary_result if row]))
+        annual_payment_path = f'{self.base_dir[:-4]}/cost_record/{year}'
 
-        csv_files = os.listdir('{}/cost_record'.format(self.base_dir[:-4]))
-        csv_files = filter(lambda l: year in l, csv_files)
+        if os.path.exists(annual_payment_path):
 
-        cost_list = []
-        for file in csv_files:
-            cost_path = '{}/cost_record/{}'.format(self.base_dir[:-4], file)
-            cost_list.append(MouthCost._read_csv(cost_path))
-        return x_date, y_salary, cost_list, csv_files
+            annual_payment_list = sorted(os.listdir(annual_payment_path), key=lambda file: datetime(
+                    year=int(file.split('.')[0].split('_')[0]),
+                    month=int(file.split('.')[0].split('_')[-1]),
+                    day=1
+                ))
 
-    def web_annual_bar(self):
-        """
-        年度收支条形图
-        :return: x, y
-        """
-        x_date, y_salary, cost_list, csv_files = self.annual(self.year)
+            x_date = [f"{month.split('.')[0]}" for month in annual_payment_list]
+
+            for month in annual_payment_list:
+                path = annual_payment_path + f'/{month}'
+                data = MouthCost._read_csv(path)
+                # 此月份开销 + 房租
+                payment_amount = round(sum([float(i['payment']) for i in data]) + self.get_rent(
+                    month.split('.')[0]), 2)
+                y_amount[0][1].append(payment_amount)
+
+            for other in self.other_record:
+                if other['date'] in x_date:
+                    month_name = other['date'] # year_month
+                    month_index = int(month_name.split('_')[-1]) - 1
+                    if other.get('salary'):
+                        y_amount[1][1].pop(month_index)
+                        y_amount[1][1].insert(month_index, eval(other.get('salary')))
+
+        return x_date, y_amount
 
 
 
@@ -764,4 +784,3 @@ if __name__ == '__main__':
     MouthCost.test([1,2,3], '2020', '5')
 
 
-    

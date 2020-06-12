@@ -12,6 +12,15 @@ def draw_balance_bar(xaxis, yaxis, title="消费统计", markline=None, width=20
                                        opts.DataZoomOpts(type_="inside")],
                         tooltip_opts=opts.TooltipOpts(trigger='axis', axis_pointer_type='shadow'))
     bar.set_series_opts(label_opts=opts.LabelOpts(is_show=False))
+
+    if markline is not None:
+        bar.set_series_opts(markline_opts=opts.MarkLineOpts(
+            data=[opts.MarkLineItem(
+                y=markline,
+                name='预算')
+            ])
+        )
+
     return bar
 
 

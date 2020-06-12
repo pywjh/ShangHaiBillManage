@@ -34,7 +34,7 @@ def get_current_month_bar():
     record, year, month = data_aggregation()
     record = MouthCost(record, year, month)
     x, y = record.web_index_bar()
-    bar = draw.draw_balance_bar(xaxis=x, yaxis=y)
+    bar = draw.draw_balance_bar(xaxis=x, yaxis=y, markline=56)
     return bar.dump_options()
 
 
@@ -94,7 +94,7 @@ def get_bar_chart(year, month):
     else:
         x = ['无数据']
         y = []
-    bar = draw.draw_balance_bar(xaxis=x, yaxis=y)
+    bar = draw.draw_balance_bar(xaxis=x, yaxis=y, markline=56)
     return bar.dump_options()
 
 
@@ -185,17 +185,13 @@ def get_category_pie(year, month):
 
 @app.route('/annual', methods=['GET', 'POST'])
 def annual():
-    name = 'select_month'
+    name = 'select_year'
     if request.method == 'GET':
-        year = 'null'
+        year = datetime.now().year
     else:
-        month = request.form.get(name) # 获取界面选择的日期
-        try:
-            t: datetime = datetime.strptime(month, '%Y-%m')
-        except ValueError:
-            t = datetime.now()
-        finally:
-            year = t.year
+        year = request.form.get(name) # 获取界面选择的日期
+        year = int(year)
+
     return redirect(url_for('annual_with_year', year=year))
 
 
@@ -213,11 +209,12 @@ def annual_with_year(year):
 
 @app.route("/barChart/year=<year>")
 def get_annual_bar(year):
-    record, year, month = data_aggregation()
+    record, year, month = data_aggregation(year=year)
     record = MouthCost(record, year, month)
-    x, y = record.web_annual_bar()
-    # c = api.draw_balance_bar_per_month(year=year)
-    # return c.dump_options()
+
+    x, y = record.web_annual_bar(year)
+    bar = draw.draw_balance_bar(x, y, title='年度收支', markline=1700+1600)
+    return bar.dump_options()
 
 
 if __name__ == "__main__":
