@@ -771,7 +771,7 @@ class MouthCost(object):
                         y_amount[1][1].pop(month_index)
                         y_amount[1][1].insert(month_index, eval(other.get('salary')))
 
-        return x_date, y_amount
+        return [f"{date.split('_')[0]}年{date.split('_')[-1]}月" for date in x_date], y_amount
 
 
 
