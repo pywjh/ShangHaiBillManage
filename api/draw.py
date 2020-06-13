@@ -41,6 +41,11 @@ def draw_usage_pie(payout, budget, title) -> Pie:
                                     ),
           )
 
+    # pie.set_global_opts(
+    #     legend_opts=opts.LegendOpts(pos_left="left", orient="vertical"), )
+    # pie.set_series_opts(tooltip_opts=opts.TooltipOpts(trigger="item",
+    #                                                 formatter="{a} <br/>{b}: {c} ({d}%)"))
+
     return pie
 
 

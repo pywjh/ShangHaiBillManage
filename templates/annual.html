@@ -42,8 +42,33 @@
                 });
             }
         )
+    </script>
+
+    <hr>
+    <div id="pie_chart" style="width:1200px; height:600px;"></div>
+    <script>
+        $(
+            function () {
+                var chart = echarts.init(document.getElementById('pie_chart'), 'white', {renderer: 'canvas'});
+                $.ajax({
+                    type: "GET",
+                    url: "{{ pie_url }}",
+                    dataType: 'json',
+                    success: function (result) {
+                        chart.setOption(result);
+                    }
+                });
+            }
+        )
 
     </script>
+
+
+    <hr>
+
+    {% include 'status_table.html' %}
+
+
 </div>
 
 {% endblock %}

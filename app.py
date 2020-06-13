@@ -5,8 +5,11 @@ from werkzeug.utils import redirect
 from flask import Flask, render_template, url_for, request, jsonify
 
 from api import draw
-from api.get_bill_record import data_aggregation, add_record
+from api import get_bill_record
 from api.bill_manage import MouthCost
+from api.get_bill_record import data_aggregation
+
+from setting import *
 
 app = Flask(__name__)
 
@@ -16,7 +19,7 @@ other_record = MouthCost.read_other_record(os.path.dirname(__file__))
 @app.route("/")
 @app.route("/index")
 def index():
-    record, year, month = data_aggregation()
+    record, year, month = data_aggregation(default=True)
     record = MouthCost(record, year, month)
     status, columns = record.to_table()
     return render_template("index.html",
@@ -31,10 +34,12 @@ def get_current_month_bar():
     首页条形统计图
     :return: Bar
     """
-    record, year, month = data_aggregation()
+    record, year, month = data_aggregation(default=True)
     record = MouthCost(record, year, month)
     x, y = record.web_index_bar()
-    bar = draw.draw_balance_bar(xaxis=x, yaxis=y, markline=56)
+    status, columns = record.to_table()
+    markline = list(filter(lambda d: d['name'] == '日付上限', status))[0]['balance']
+    bar = draw.draw_balance_bar(xaxis=x, yaxis=y, markline=markline)
     return bar.dump_options()
 
 
@@ -45,7 +50,7 @@ def get_month_usage():
     :return: Pie
     """
     budget = float(MouthCost.current_fix_data(other_record)['budget'])
-    record, year, month = data_aggregation()
+    record, year, month = data_aggregation(default=True)
     record = MouthCost(record, year, month)
     data = record.web_index_pie()
     pie =  draw.draw_usage_pie(payout=data, budget=[('预算', budget)], title="本月结余")
@@ -94,7 +99,7 @@ def get_bar_chart(year, month):
     else:
         x = ['无数据']
         y = []
-    bar = draw.draw_balance_bar(xaxis=x, yaxis=y, markline=56)
+    bar = draw.draw_balance_bar(xaxis=x, yaxis=y)
     return bar.dump_options()
 
 
@@ -131,7 +136,7 @@ def get_update(year, month):
 @app.route('/add', methods=['POST'])
 def add_bill():
     params = json.loads(request.data)
-    code, message = add_record(params)
+    code, message = get_bill_record.add_record(params)
     return jsonify({'code': code, 'message': message})
 
 
@@ -199,12 +204,27 @@ def annual():
 def annual_with_year(year):
     name = 'select_year'
 
-    # status, columns = to_table(api.account_status_per_year(year, prefix="{}年".format(year)))
+    status, columns = get_bill_record.get_data_columns(year=year)
+
     return render_template("annual.html", name=name,
                            chart_url=url_for('get_annual_bar', year=year),
-                           # pie_url=url_for('get_annual_pie', year=year),
-                           # data=status, columns=columns
+                           pie_url=url_for('get_annual_pie', year=year),
+                           data=status, columns=columns
                            )
+
+@app.route("/pieChart/year=<year>")
+def get_annual_pie(year):
+    eat_list, other_list = get_bill_record.get_all_eat_other_record(year)
+    eat, other = get_bill_record.get_all_eat_other_sum_amount(
+        eat_list,
+        other_list
+    )
+    pie = draw.draw_category_pie(
+        inner=eat[: NUMBER_WEB_CATEGORY_PIE_EAT],
+        outside=other[: NUMBER_WEB_CATEGORY_PIE_OTHER],
+        inner_title=f'{year}年饮食报表',
+        outer_title=f'{year}年其他报表')
+    return pie.dump_options()
 
 
 @app.route("/barChart/year=<year>")

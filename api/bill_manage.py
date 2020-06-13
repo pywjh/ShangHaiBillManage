@@ -92,26 +92,28 @@ class MouthCost(object):
             self.pie()
 
     @classmethod
-    def get_special_date(cls, year='null', month='null', day=1):
-        if dt.date.today().day == 1 and day == 1:
-            day = 1
-        else:
-            day = int(day)
+    def get_special_date(cls, year='null', month='null',day=None, default=None):
+        """根据发工资时间，判断月份是否往前一个月"""
+        if not day:
+            day = dt.date.today().day
+        day = int(day)
 
         base_dir = os.path.dirname(__file__)
 
         other_record = MouthCost.read_other_record(base_dir[:-4])
 
-        year = str(dt.date.today().year) if year in ('null', None) else year
+        year = dt.date.today().year if year in ('null', None) else year
 
         month = dt.date.today().month if month in ('null', None) else month
 
         current_fix_data = MouthCost.current_fix_data(other_record, year=year, month=month)
 
-        if current_fix_data and day < int(current_fix_data['salary_day']):
-            month = str((dt.date(dt.date.today().year, int(month), day) - relativedelta(months=1)).month)
-        else:
-            month = str(month)
+        if default:
+
+            if current_fix_data and day < int(current_fix_data['salary_day']):
+                month = str((dt.date(dt.date.today().year, int(month), day) - relativedelta(months=1)).month)
+            else:
+                month = str(month)
 
         return year, month
 
@@ -629,24 +631,25 @@ class MouthCost(object):
         """
         eat_cost = []
         other_cost = []
-        names = list(set([record['name'] for record in self.record]))
-        # 同名消费汇总
-        for name in names:
-            if name in [i['name'] for i in self.eat_month]:
-                eat_cost.append((
-                    name, round(sum([float(i['payment']) for i in list(
-                        filter(lambda li: li['name'] == name, self.eat_month)
-                    )]), 2))
-                )
-            if name in [i['name'] for i in self.other_month]:
-                other_cost.append(
-                    (name, round(sum([float(i['payment']) for i in list(
-                        filter(lambda li: li['name']==name, self.other_month)
-                    )]), 2))
-                )
-        # 限制数量(价格降序排列前30条数据)
-        eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_EAT]
-        other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_OTHER]
+        if self.record:
+            names = list(set([record['name'] for record in self.record]))
+            # 同名消费汇总
+            for name in names:
+                if name in [i['name'] for i in self.eat_month]:
+                    eat_cost.append((
+                        name, round(sum([float(i['payment']) for i in list(
+                            filter(lambda li: li['name'] == name, self.eat_month)
+                        )]), 2))
+                    )
+                if name in [i['name'] for i in self.other_month]:
+                    other_cost.append(
+                        (name, round(sum([float(i['payment']) for i in list(
+                            filter(lambda li: li['name']==name, self.other_month)
+                        )]), 2))
+                    )
+            # 限制数量(价格降序排列前30条数据)
+            eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_EAT]
+            other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_OTHER]
         return (eat_cost, other_cost)
 
     def to_table(self, category=False):
@@ -655,16 +658,22 @@ class MouthCost(object):
         :return: ([{name1: balance1}, {name2: balance2}],  [{columns}])
         '''
         current_month_payment = self.all_total()
+        current_salary = '0'
+        rent = 0
+        budget = 0
+        save = 0
+        rest_date = 1
         # 当月工资数据
         record = self.current_fix_data
-        current_salary = record['salary'] # 当月工资
-        rent = float(record['rent']) # 当月房租
-        budget = float(record['budget']) # 当月房租
-        save = float(record['save']) # 当月存储
-        # 这个月剩余的天数
-        rest_date = self.current_rest_day()
+        if record:
+            current_salary = record['salary'] # 当月工资
+            rent = float(record['rent']) # 当月房租
+            budget = float(record['budget']) # 当月预算
+            save = float(record['save']) # 当月存储
+            # 这个月剩余的天数
+            rest_date = self.current_rest_day()
         status = [
-            {'name': '本月收入','balance': current_salary if record.get('note', False) else current_salary},
+            {'name': '本月收入','balance': current_salary if record and record.get('note', False) else current_salary},
             {'name': '本月支出','balance': current_month_payment},
             {'name': '本月房租','balance': rent},
             {'name': '本月预算','balance': budget},
@@ -731,7 +740,7 @@ class MouthCost(object):
             })
             return details_bill[::-1][:setting.NUMBER_UPDATE_TABLE], columns
 
-        return details_bill[::-1], columns
+        return details_bill, columns
 
     def web_annual_bar(self, year):
         """

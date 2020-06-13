@@ -13,3 +13,5 @@
 /env/
 /api/config.py
 /cost_record/
+
+/.vscode
