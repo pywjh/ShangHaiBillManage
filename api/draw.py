@@ -24,6 +24,28 @@ def draw_balance_bar(xaxis, yaxis, title="消费统计", markline=None, width=20
     return bar
 
 
+def draw_balance_line(xaxis, yaxis, title="消费统计", markline=None, width=2000) -> Bar:
+    line = Line()
+    line.add_xaxis(xaxis)
+    for name, axis in yaxis:
+        line.add_yaxis(name, axis)
+    line.set_global_opts(title_opts=opts.TitleOpts(title=title, ),
+                        datazoom_opts=[opts.DataZoomOpts(range_start=0, range_end=100),
+                                       opts.DataZoomOpts(type_="inside")],
+                        tooltip_opts=opts.TooltipOpts(trigger='axis', axis_pointer_type='shadow'))
+    line.set_series_opts(label_opts=opts.LabelOpts(is_show=False))
+
+    if markline is not None:
+        line.set_series_opts(markline_opts=opts.MarkLineOpts(
+            data=[opts.MarkLineItem(
+                y=markline,
+                name='预算')
+            ])
+        )
+
+    return line
+
+
 def draw_usage_pie(payout, budget, title) -> Pie:
     pie = Pie()
     pie.add(series_name=title,

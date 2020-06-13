@@ -99,8 +99,8 @@ def get_bar_chart(year, month):
     else:
         x = ['无数据']
         y = []
-    bar = draw.draw_balance_bar(xaxis=x, yaxis=y)
-    return bar.dump_options()
+    line = draw.draw_balance_line(xaxis=x, yaxis=y)
+    return line.dump_options()
 
 
 @app.route("/update", methods=['GET', 'POST'])
