@@ -4,13 +4,12 @@
 # date：          2020/5/14
 
 import os
-import csv
-import datetime as dt
+import re
 
-from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
 from api.bill_manage import MouthCost
+from setting import *
 
 base_dir = os.path.dirname(__file__)
 other_record = MouthCost.read_other_record(base_dir[:-4])
@@ -67,7 +66,7 @@ def add_record(params):
         return (1, e)
 
 
-def get_all_eat_other_record(year):
+def get_all_eat_other_record(year) -> tuple:
     """将指定年分的12个月的饮食和其他消费类别总计汇总"""
     eat_list = []
     other_list = []
@@ -107,6 +106,7 @@ def get_all_eat_other_sum_amount(eat_list, other_list):
         [other for other in other_dict.items()],
         key=lambda t: t[1], reverse=True)
     return eat, other
+
 
 def get_data_columns(year):
     month_total = 0
@@ -164,6 +164,36 @@ def get_data_columns(year):
     ]
     return status, columns
 
+
+def web_statistical_bar():
+    """总统计"""
+    y_amount = [('支出', []), ('收入', [])]
+    year_list = os.listdir(os.path.join(base_dir[:-4], 'cost_record'))
+    for year in year_list:
+        if not re.search(r"^\d{4}$", year):
+            year_list.pop(year_list.index(year))
+    for year in year_list:
+        status, _ = get_data_columns(year)
+        y_amount[0][1].append(list(filter(lambda d: '支出' in d['name'], status))[0]['balance'])
+        y_amount[1][1].append(list(filter(lambda d: '收入' in d['name'], status))[0]['balance'])
+
+    return year_list, y_amount
+
+
+def web_statistical_line():
+    """年度结余"""
+    year_list, y_amount = web_statistical_bar()
+    y = [('结余', [])]
+    for pay, salary in zip(y_amount[0][1], y_amount[1][1]):
+        y[0][1].append(round(salary - pay, 2))
+    return year_list, y
+
+
+def account_from_start_to_now():
+    """剩余资产"""
+    year_list, y = web_statistical_line()
+    return round(sum(y[0][1]), 2)
+
 if __name__ == '__main__':
     # annual('2020')
-    pass
+    print(account_from_start_to_now())

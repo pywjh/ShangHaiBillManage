@@ -181,8 +181,8 @@ def get_category_pie(year, month):
         year = str(datetime.now().year)
         month = str(datetime.now().month)
     pie = draw.draw_category_pie(
-        inner=eat,
-        outside=other,
+        inner=eat[:NUMBER_WEB_CATEGORY_PIE_EAT],
+        outside=other[:NUMBER_WEB_CATEGORY_PIE_OTHER],
         inner_title=f'{year}年{month}饮食报表',
         outer_title=f'{year}年{month}其他报表')
     return pie.dump_options()
@@ -216,12 +216,12 @@ def annual_with_year(year):
 def get_annual_pie(year):
     eat_list, other_list = get_bill_record.get_all_eat_other_record(year)
     eat, other = get_bill_record.get_all_eat_other_sum_amount(
-        eat_list,
-        other_list
+        eat_list[:NUMBER_WEB_CATEGORY_PIE_EAT],
+        other_list[: NUMBER_WEB_CATEGORY_PIE_OTHER]
     )
     pie = draw.draw_category_pie(
-        inner=eat[: NUMBER_WEB_CATEGORY_PIE_EAT],
-        outside=other[: NUMBER_WEB_CATEGORY_PIE_OTHER],
+        inner=eat,
+        outside=other,
         inner_title=f'{year}年饮食报表',
         outer_title=f'{year}年其他报表')
     return pie.dump_options()
@@ -235,6 +235,31 @@ def get_annual_bar(year):
     x, y = record.web_annual_bar(year)
     bar = draw.draw_balance_bar(x, y, title='年度收支', markline=1700+1600)
     return bar.dump_options()
+
+
+@app.route("/statistics")
+def annual_statistics():
+    balance = get_bill_record.account_from_start_to_now()
+    return render_template(
+        "statistics.html",
+        bar_chart_url=url_for('get_annual_statistics_bar'),
+        line_chart_url=url_for('get_annual_statistics_line'),
+        balance=balance
+       )
+
+
+@app.route('/barChart/annual_statistics')
+def get_annual_statistics_bar():
+    x, y = get_bill_record.web_statistical_bar()
+    bar = draw.draw_balance_bar(x, y, title='年度收支', markline=1700 + 1600)
+    return bar.dump_options()
+
+
+@app.route('/lineChart/annual_statistics')
+def get_annual_statistics_line():
+    x, y = get_bill_record.web_statistical_line()
+    line = draw.draw_balance_line(x, y, title='年度结余')
+    return line.dump_options()
 
 
 if __name__ == "__main__":

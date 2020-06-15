@@ -10,6 +10,7 @@ def year_cost_record():
         if hasattr(slcr, month):
             print(getattr(slcr, month))
 
+
 if __name__ == '__main__':
     year_cost_record()
     

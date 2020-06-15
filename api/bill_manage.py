@@ -159,7 +159,7 @@ class MouthCost(object):
     def current_rest_day(self):
         """当月目前所剩下的天数，基于发工资日"""
         day = datetime.now().day
-        if day > int(self.current_fix_data['salary_day']):
+        if day >= int(self.current_fix_data['salary_day']):
             rest_date = calendar.monthrange(
                 year=int(self.year),
                 month=int(self.month_number)
@@ -648,8 +648,8 @@ class MouthCost(object):
                         )]), 2))
                     )
             # 限制数量(价格降序排列前30条数据)
-            eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_EAT]
-            other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)[:setting.NUMBER_WEB_CATEGORY_PIE_OTHER]
+            eat_cost = sorted(eat_cost, key=lambda t: t[1], reverse=True)
+            other_cost = sorted(other_cost, key=lambda t: t[1], reverse=True)
         return (eat_cost, other_cost)
 
     def to_table(self, category=False):
