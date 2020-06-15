@@ -251,7 +251,7 @@ def annual_statistics():
 @app.route('/barChart/annual_statistics')
 def get_annual_statistics_bar():
     x, y = get_bill_record.web_statistical_bar()
-    bar = draw.draw_balance_bar(x, y, title='年度收支', markline=1700 + 1600)
+    bar = draw.draw_balance_bar(x, y, title='年度收支')
     return bar.dump_options()
 
 
