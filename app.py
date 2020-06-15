@@ -216,12 +216,12 @@ def annual_with_year(year):
 def get_annual_pie(year):
     eat_list, other_list = get_bill_record.get_all_eat_other_record(year)
     eat, other = get_bill_record.get_all_eat_other_sum_amount(
-        eat_list[:NUMBER_WEB_CATEGORY_PIE_EAT],
-        other_list[: NUMBER_WEB_CATEGORY_PIE_OTHER]
+        eat_list,
+        other_list
     )
     pie = draw.draw_category_pie(
-        inner=eat,
-        outside=other,
+        inner=eat[: NUMBER_WEB_CATEGORY_PIE_EAT],
+        outside=other[: NUMBER_WEB_CATEGORY_PIE_OTHER],
         inner_title=f'{year}年饮食报表',
         outer_title=f'{year}年其他报表')
     return pie.dump_options()
