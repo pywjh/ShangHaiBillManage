@@ -24,7 +24,7 @@ def draw_balance_bar(xaxis, yaxis, title="消费统计", markline=None, width=20
     return bar
 
 
-def draw_balance_line(xaxis, yaxis, title="消费统计", markline=None, width=2000) -> Bar:
+def draw_balance_line(xaxis, yaxis, title="消费统计", markline=None, width=2000) -> Line:
     line = Line()
     line.add_xaxis(xaxis)
     for name, axis in yaxis:

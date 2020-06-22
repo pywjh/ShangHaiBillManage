@@ -6,8 +6,8 @@ import calendar
 import datetime as dt
 import numpy as np
 
-from matplotlib import pyplot as plt
-from matplotlib import font_manager
+# from matplotlib import pyplot as plt
+# from matplotlib import font_manager
 from collections import Counter
 from win32api import GetSystemMetrics
 from PIL import Image
@@ -37,7 +37,7 @@ class MouthCost(object):
         self.other_record = MouthCost.read_other_record(self.base_dir[:-4])
         self.font = setting.FONT # 云图所使用的字体
         self.year = str(dt.date.today().year) if not year or year=='null' else year
-        self.my_font = font_manager.FontProperties(fname=self.font) # 统计图所使用的字体包
+        # self.my_font = font_manager.FontProperties(fname=self.font) # 统计图所使用的字体包
         self.bar_width = GetSystemMetrics(0) / 100  # 折线图宽
         self.bar_height = GetSystemMetrics(1) / 100  # 折线图高
         self.bar_dpi = 200  # 图片分辨率
@@ -64,7 +64,7 @@ class MouthCost(object):
         # self.background_color = setting.BACKGROUND_COLOR # 云词背景颜色
         if setting.CLOUDWORD_SHAPE:
             self.mark = np.array(Image.open(r'.\mask\mark.png'))
-        plt.rcParams['font.sans-serif'] = setting.GLOBAL_FONT
+        # plt.rcParams['font.sans-serif'] = setting.GLOBAL_FONT
 
     def __call__(self, *args, **kwargs):
         other_total = round(self.all_total() - self.eat_total(), 2)
