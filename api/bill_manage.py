@@ -127,11 +127,11 @@ class MouthCost(object):
                     return [row for row in reader if row]
 
             except UnicodeDecodeError:
-                print("Not Support This File Encoding!!")
+                raise ValueError("文件格式有误！")
             except FileNotFoundError:
-                print('未找到账单文件：{}'.format(path.split('/')[-1]))
+                raise ValueError('未找到账单文件：{}'.format(path))
             except Exception as e:
-                print(e)
+                raise ValueError(e)
         return None
 
     @classmethod

@@ -31,14 +31,17 @@
 
 </head>
 <body style="background: cornsilk">
-<div class="container" style="padding: 10px;background: #e7e7e7">
+<div class="container navbar-fixed-top" style="font-size:20px;padding: 10px;">
     <b><a href="/index">首页</a></b>
     <a href="/details">账单明细</a>
     <a href="/category_statistics">账单报表</a>
     <a href="/annual">年度收支</a>
     <a href="/statistics">统计</a>
     <a href="/update">数据录入</a>
-    <a onclick="javascript:window.print()">打印</a>
+    <a onclick="javascript:window.print()" style="padding-left:50px">打印</a>
+</div>
+<div style="padding-top: 30px">
+
 </div>
 {% block content %} {% endblock %}
 
