@@ -26,19 +26,20 @@
     <script src="/static/bootstrap-table-master/dist/extensions/editable/bootstrap-table-editable.js"></script>
     <script src="/static/bootstrap3-editable/js/bootstrap-editable.js"></script>
     <script src="{{url_for('static', filename='message.js')}}"></script>
+    <link rel="stylesheet" href="{{url_for('static', filename='common.css')}}">
     <link rel="stylesheet" href="/static/bootstrap3-editable/css/bootstrap-editable.css">
 
 
 </head>
 <body style="background: cornsilk">
-<div class="container navbar-fixed-top" style="font-size:20px;padding: 10px;">
-    <b><a href="/index">首页</a></b>
+<div id="header" class="container navbar-fixed-top" style="font-size:20px;padding: 10px;">
+    <a href="/index">首页</a>
     <a href="/details">账单明细</a>
     <a href="/category_statistics">账单报表</a>
     <a href="/annual">年度收支</a>
     <a href="/statistics">统计</a>
     <a href="/update">数据录入</a>
-    <a onclick="javascript:window.print()" style="padding-left:50px">打印</a>
+    <button onclick="javascript:window.print()" style="margin-left: 60px">打印</button>
 </div>
 <div style="padding-top: 30px">
 
@@ -46,4 +47,5 @@
 {% block content %} {% endblock %}
 
 </body>
+<script src="{{url_for('static', filename='common.js')}}"></script>
 </html>
