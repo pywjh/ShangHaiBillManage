@@ -1,0 +1,49 @@
+{% extends "base.html "%}
+
+{% block content %}
+<div class="container">
+    <table class="table" style="margin: auto">
+        <thead>
+        <tr style="font-size: 20px">
+            <th class="datepicker-inline">
+                <input type="radio" id="month" name="time_select" checked>
+                <label for="month">单月</label>
+            </th>
+            <th class="datepicker-inline">
+                <input type="radio" id="year" name="time_select">
+                <label for="year">单年</label>
+            </th>
+            <th class="datepicker-inline">
+                <input type="radio" id="all" name="time_select">
+                <label for="all">全部</label>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <input type="text" placeholder="单月" class="month_picker"
+                       name='month_select'>
+                <input type="text" placeholder="单年" class="year_picker"
+                       name='year_select'>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+        $(".month_picker").datepicker({
+            format: "yyyy-mm",
+            todayBtn: "linked",
+            language: "zh-CN",
+            orientation: "auto",//日期控件显示位置
+            startView: "months",//默认显示视图：months、years、centuries，可选
+            minViewMode: "months",//最小显示视图
+            keyboardNavigation: false,
+            autoclose: true,
+            todayHighlight: true
+        });
+    </script>
+
+{% endblock %}

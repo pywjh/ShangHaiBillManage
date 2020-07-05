@@ -262,5 +262,10 @@ def get_annual_statistics_line():
     return line.dump_options()
 
 
+@app.route('/tools')
+def tools():
+    return render_template('tools.html')
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
