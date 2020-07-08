@@ -3,6 +3,16 @@ from pyecharts.charts import Bar, Line, Pie
 
 
 def draw_balance_bar(xaxis, yaxis, title="消费统计", markline=None, width=2000) -> Bar:
+    """
+    x = [月_日, 月_日, 月_日, ....]
+    y = [(title1, [num1, num2, num3, num4, ...]), (title2, [num1, num2, num3, num4, ...])]
+    :param xaxis: x轴
+    :param yaxis: y轴
+    :param title: 标题
+    :param markline: 标记辅助线
+    :param width: 宽
+    :return: Bar
+    """
     bar = Bar()
     bar.add_xaxis(xaxis)
     for name, axis in yaxis:
@@ -25,6 +35,16 @@ def draw_balance_bar(xaxis, yaxis, title="消费统计", markline=None, width=20
 
 
 def draw_balance_line(xaxis, yaxis, title="消费统计", markline=None, width=2000) -> Line:
+    """
+        x = [月_日, 月_日, 月_日, ....]
+        y = [(title1, [num1, num2, num3, num4, ...]), (title2, [num1, num2, num3, num4, ...])]
+        :param xaxis: x轴
+        :param yaxis: y轴
+        :param title: 标题
+        :param markline: 标记辅助线
+        :param width: 宽
+        :return: Line
+        """
     line = Line()
     line.add_xaxis(xaxis)
     for name, axis in yaxis:
@@ -47,6 +67,13 @@ def draw_balance_line(xaxis, yaxis, title="消费统计", markline=None, width=2
 
 
 def draw_usage_pie(payout, budget, title) -> Pie:
+    """
+    list [(title1, num1), (title2, num2)]
+    :param payout: 消费
+    :param budget: 预算
+    :param title:  标题
+    :return: Pie
+    """
     pie = Pie()
     pie.add(series_name=title,
           data_pair=budget,

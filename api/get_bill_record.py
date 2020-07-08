@@ -7,6 +7,7 @@ import os
 import re
 
 from datetime import datetime
+from flask import jsonify
 
 from api.bill_manage import MouthCost
 from setting import *
@@ -193,6 +194,75 @@ def account_from_start_to_now():
     """剩余资产"""
     year_list, y = web_statistical_line()
     return round(sum(y[0][1]), 2)
+
+
+def search_key(word, year=None):
+    all_record = []
+    if year:
+        if os.path.exists(os.path.join(base_dir[:-4], f"cost_record/{year}")):
+            months = [month for month in range(1, 13)]
+            for month in months:  # 将整年的所有饮食和其他消费合并
+                record, year, month = data_aggregation(year=year, month=month)
+                if record:
+                    all_record += record
+                    if len(all_record) > 10000:
+                        break
+    else:
+        cost_record_path = os.path.join(base_dir[:-4], f"cost_record/")
+        year_list = os.listdir(cost_record_path)
+        for year in filter(lambda l: '.csv' not in l, year_list):
+            for month in [file[5:-4] for file in  os.listdir(os.path.join(cost_record_path, year))]:
+                record, year, month = data_aggregation(year=year, month=month)
+                if record:
+                    all_record += record
+                    if len(all_record) > 10000:
+                        break
+
+    search_result = filter(lambda d: word==d['name'] or word in d['name'] or word in (d['note'] or ''), all_record)
+
+    data = [
+            {
+                'date': f'{year}年{i["date"].split("_")[0]}月{i["date"].split("_")[1]}日',
+                'name': i['name'],
+                'payment': i['payment'],
+                'type': '饮食' if i['type'] == 'eat' else '其他',
+                'note': i['note']
+            }
+        for i in sorted(search_result, key=lambda d: datetime(
+                year=int(year),
+                month=int(d['date'].split('_')[0]),
+                day=int(d['date'].split('_')[-1])
+            ))
+    ]
+
+    columns = [
+        {
+            "field": "date",  # which is the field's name of data key
+            "title": "日期",  # display as the table header's name
+            "sortable": False,
+        },
+        {
+            "field": "name",
+            "title": "用途",
+            "sortable": False,
+        },
+        {
+            "field": "payment",
+            "title": "金额（元）",
+            "sortable": False,
+        },
+        {
+            "field": "type",
+            "title": "类型",
+            "sortable": False,
+        },
+        {
+            "field": "note",
+            "title": "备注",
+            "sortable": False,
+        },
+    ]
+    return data, columns
 
 if __name__ == '__main__':
     # annual('2020')

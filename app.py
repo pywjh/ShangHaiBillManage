@@ -212,6 +212,7 @@ def annual_with_year(year):
                            data=status, columns=columns
                            )
 
+
 @app.route("/pieChart/year=<year>")
 def get_annual_pie(year):
     eat_list, other_list = get_bill_record.get_all_eat_other_record(year)
@@ -262,9 +263,50 @@ def get_annual_statistics_line():
     return line.dump_options()
 
 
-@app.route('/tools')
-def tools():
-    return render_template('tools.html')
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    today_year = datetime.today().year
+    select_year = 'select_year'
+    total = False
+    word = 'word'
+    search_year = ''
+    if request.method == 'GET':
+        data = [{'name': '请选择'}]
+        columns = []
+    else:
+        search_year = request.form.get(select_year) if request.form.get('type') == 'year' else None
+        word = request.form.get('word', '')
+        data, columns = get_bill_record.search_key(
+            word=word,
+            year=search_year
+        )
+        if data:
+            total = round(sum([float(i['payment']) for i in data]), 4)
+    return render_template(
+        "tools.html",
+        search_line=url_for('search_line', word='null' if not word else word, year='null' if not search_year else search_year),
+        word=word,
+        today_year=today_year,
+        select_year=select_year,
+        data=data,
+        columns=columns,
+        total=total,
+    )
+
+
+@app.route('/search/search_line/word=<word>&year=<year>')
+def search_line(word, year):
+    if word == 'null':
+        word = ''
+    data, columns = get_bill_record.search_key(
+        word=word,
+        year=request.form.get(year) if request.form.get('time') == 'year' else None
+    )
+    x = [d['date'] for d in data]
+    y = [(word, [d['payment'] for d in data])]
+    line = draw.draw_balance_line(xaxis=x, yaxis=y)
+    return line.dump_options()
+
 
 
 if __name__ == "__main__":
