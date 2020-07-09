@@ -22,10 +22,16 @@ def index():
     record, year, month = data_aggregation(default=True)
     record = MouthCost(record, year, month)
     status, columns = record.to_table()
-    return render_template("index.html",
-                           chart_url=url_for('get_current_month_bar'),
-                           usage_chart=url_for("get_month_usage"),
-                           data=status, columns=columns)
+    paid_limit = list(filter(lambda d: d['name'] == '日付上限', status))[0]['balance']
+    print(paid_limit)
+    return render_template(
+        "index.html",
+        chart_url=url_for('get_current_month_bar'),
+        usage_chart=url_for("get_month_usage"),
+        data=status,
+        columns=columns,
+        paid_limit=paid_limit
+    )
 
 
 @app.route("/current_month")
@@ -310,4 +316,5 @@ def search_line(word, year):
 
 
 if __name__ == "__main__":
+    app.config["JSON_AS_ASCII"] = False
     app.run(debug=True, port=8000)
