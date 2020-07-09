@@ -23,7 +23,6 @@ def index():
     record = MouthCost(record, year, month)
     status, columns = record.to_table()
     paid_limit = list(filter(lambda d: d['name'] == '日付上限', status))[0]['balance']
-    print(paid_limit)
     return render_template(
         "index.html",
         chart_url=url_for('get_current_month_bar'),
