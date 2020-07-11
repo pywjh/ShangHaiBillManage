@@ -142,10 +142,11 @@ def get_data_columns(year):
 
     status = [
         {'name': f'{year}年收入金额', 'balance': round(salary_total, 2)},
-        {'name': f'{year}年支出金额', 'balance': round(month_total, 2)},
         {'name': f'{year}年饮食金额', 'balance': round(eat_total, 2)},
         {'name': f'{year}年其他金额', 'balance': round(other_total, 2)},
+        {'name': f'{year}年吃穿金额', 'balance': round(eat_total + other_total, 2)},
         {'name': f'{year}年租房金额', 'balance': round(rent_total, 2)},
+        {'name': f'{year}年支出金额', 'balance': round(month_total, 2)},
         {
             'name': f'{year}年盈亏金额',
             'balance': f"{rest_total}" if rest_total > 0 else f""
