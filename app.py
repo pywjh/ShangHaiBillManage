@@ -239,7 +239,7 @@ def get_annual_bar(year):
     record = MouthCost(record, year, month)
 
     x, y = record.web_annual_bar(year)
-    bar = draw.draw_balance_bar(x, y, title='年度收支', markline=1700+1600)
+    bar = draw.draw_balance_bar(x, y, title='年度收支', markline=1700+1700)
     return bar.dump_options()
 
 
