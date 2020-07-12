@@ -89,10 +89,9 @@ def get_details(year, month):
     data, columns = [], []
     if record:
         data, columns = record.to_detail_table()
-    total = round(sum([float(d['payment']) for d in data]))
     return render_template("details.html",
                            chart_url=url_for('get_bar_chart', year=year, month=month),
-                           name=name, data=data, columns=columns, total=total)
+                           name=name, data=data, columns=columns)
 
 
 @app.route("/barChart/year=<year>&month=<month>")
