@@ -89,22 +89,24 @@ def get_details(year, month):
     data, columns = [], []
     if record:
         data, columns = record.to_detail_table()
-
+    total = round(sum([float(d['payment']) for d in data]))
     return render_template("details.html",
                            chart_url=url_for('get_bar_chart', year=year, month=month),
-                           name=name, data=data, columns=columns)
+                           name=name, data=data, columns=columns, total=total)
 
 
 @app.route("/barChart/year=<year>&month=<month>")
 def get_bar_chart(year, month):
     record, year, month = data_aggregation(year, month)
     record = MouthCost(record, year, month)
+    title = '消费统计'
     if record:
         x, y = record.web_index_bar()
+        title = '消费合计：{}元'.format(round(sum([float(i) for i in y[2][1]]), 2))
     else:
         x = ['无数据']
         y = []
-    line = draw.draw_balance_line(xaxis=x, yaxis=y)
+    line = draw.draw_balance_line(xaxis=x, yaxis=y, title=title)
     return line.dump_options()
 
 
