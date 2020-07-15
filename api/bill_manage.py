@@ -673,7 +673,7 @@ class MouthCost(object):
             # 这个月剩余的天数
             rest_date = self.current_rest_day()
         status = [
-            {'name': '本月收入','balance': current_salary if record and record.get('note', False) else current_salary},
+            {'name': '本月收入','balance': current_salary},
             {'name': '本月支出','balance': current_month_payment},
             {'name': '本月房租','balance': rent},
             {'name': '本月预算','balance': budget},

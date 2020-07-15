@@ -194,7 +194,7 @@ def web_statistical_line():
 def account_from_start_to_now():
     """剩余资产"""
     year_list, y = web_statistical_line()
-    return round(sum(y[0][1]), 2)
+    return f"{round(sum(y[0][1]), 2):,}"
 
 
 def search_key(word, year=None):
