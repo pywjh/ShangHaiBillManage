@@ -783,12 +783,6 @@ class MouthCost(object):
         return [f"{date.split('_')[0]}年{date.split('_')[-1]}月" for date in x_date], y_amount
 
 
-
-
-
-
-
-
 if __name__ == '__main__':
     MouthCost.test([1,2,3], '2020', '5')
 

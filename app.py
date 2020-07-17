@@ -29,7 +29,8 @@ def index():
         usage_chart=url_for("get_month_usage"),
         data=status,
         columns=columns,
-        paid_limit=paid_limit
+        paid_limit=paid_limit,
+        note='当日可用￥'
     )
 
 
@@ -212,10 +213,15 @@ def annual_with_year(year):
 
     status, columns = get_bill_record.get_data_columns(year=year)
 
+    annual_earnings = f"{float(status[-1]['balance']):,}"
+
     return render_template("annual.html", name=name,
                            chart_url=url_for('get_annual_bar', year=year),
                            pie_url=url_for('get_annual_pie', year=year),
-                           data=status, columns=columns
+                           data=status,
+                           columns=columns,
+                           annual_earnings=annual_earnings,
+                           note='年度收益￥'
                            )
 
 
@@ -246,12 +252,13 @@ def get_annual_bar(year):
 
 @app.route("/statistics")
 def annual_statistics():
-    balance = get_bill_record.account_from_start_to_now()
+    total_assets = get_bill_record.account_from_start_to_now()
     return render_template(
         "statistics.html",
         bar_chart_url=url_for('get_annual_statistics_bar'),
         line_chart_url=url_for('get_annual_statistics_line'),
-        balance=balance
+        total_assets=total_assets,
+        note='剩余资产￥'
        )
 
 
@@ -312,7 +319,6 @@ def search_line(word, year):
     y = [(word, [d['payment'] for d in data])]
     line = draw.draw_balance_line(xaxis=x, yaxis=y)
     return line.dump_options()
-
 
 
 if __name__ == "__main__":

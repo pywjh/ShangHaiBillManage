@@ -2,6 +2,10 @@
 
 
 {% block content %}
+<div style="position: fixed;top: 100px;right: 100px">
+    <img src="/static/img/annual_earnings.png">
+    <span style="position: fixed;top: 230px;right: 80px;text-shadow: 1px 1px black;font-size: 20px">{{note}}{{annual_earnings}}</span>
+</div>
 
 <div class="container" style="padding: 10px; ">
     <form action="{{ url_for('annual') }}" method="post">
