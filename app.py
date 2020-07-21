@@ -21,6 +21,7 @@ other_record = MouthCost.read_other_record(os.path.dirname(__file__))
 def index():
     record, year, month = data_aggregation(default=True)
     record = MouthCost(record, year, month)
+    record.cost_cloudword()
     status, columns = record.to_table()
     paid_limit = list(filter(lambda d: d['name'] == '日付上限', status))[0]['balance']
     return render_template(

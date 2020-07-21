@@ -6,8 +6,8 @@ import calendar
 import datetime as dt
 import numpy as np
 
-# from matplotlib import pyplot as plt
-# from matplotlib import font_manager
+from matplotlib import pyplot as plt
+from matplotlib import font_manager
 from collections import Counter
 from win32api import GetSystemMetrics
 from PIL import Image
@@ -163,7 +163,7 @@ class MouthCost(object):
             rest_date = calendar.monthrange(
                 year=int(self.year),
                 month=int(self.month_number)
-            )[1] - int(self.x_axis_num()[-1].split('_')[-1]) + 15
+            )[1] - day + 14
         else:
             rest_date = 15 - day
         return rest_date
@@ -428,7 +428,7 @@ class MouthCost(object):
             生成消费类别的云图s
         """
         category_list = self.category_list()
-        text = ' '.join(category_list)
+        text = ' '.join([name[0] for name in category_list])
         wd = WordCloud(
             font_path=self.font,
             width=setting.CLOUD_WIDTH,

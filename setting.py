@@ -76,10 +76,10 @@ MERGE_PLOT = True
 CATEGORY_BAR = True
 
 # 是否生成消费类别云图
-COST_CLOUDWORD = False
+COST_CLOUDWORD = True
 
 # 是否生成规定形状云图
-CLOUDWORD_SHAPE = False
+CLOUDWORD_SHAPE = True
 
 # 是否生成消费对比图
 DOUBLE_BAR = True
