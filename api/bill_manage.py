@@ -662,29 +662,30 @@ class MouthCost(object):
         rent = 0
         budget = 0
         save = 0
-        rest_date = 1
         # 当月工资数据
         record = self.current_fix_data
         if record:
-            current_salary = record['salary'] # 当月工资
-            rent = float(record['rent']) # 当月房租
-            budget = float(record['budget']) # 当月预算
-            save = float(record['save']) # 当月存储
+            current_salary = record['salary']  # 当月工资
+            rent = float(record['rent'])  # 当月房租
+            budget = float(record['budget'])  # 当月预算
+            save = float(record['save'])  # 当月存储
             # 这个月剩余的天数
             rest_date = self.current_rest_day()
+            balance = round((budget - current_month_payment), 2)
+            pay_limit = round((balance / rest_date), 2) if balance > 0 else 0
         status = [
-            {'name': '本月收入','balance': current_salary},
-            {'name': '本月支出','balance': current_month_payment},
-            {'name': '本月房租','balance': rent},
-            {'name': '本月预算','balance': budget},
-            {'name': '预算结余','balance': round((budget - current_month_payment), 2)},
-            {'name': '日付上限','balance': round(((budget - current_month_payment) / rest_date), 2)},
-            {'name': '月储金额','balance': float(save)},
-            {'name': '本月结余','balance': round((eval(current_salary)-current_month_payment-rent), 2)},
+            {'name': '本月收入', 'balance': current_salary},
+            {'name': '本月支出', 'balance': current_month_payment},
+            {'name': '本月房租', 'balance': rent},
+            {'name': '本月预算', 'balance': budget},
+            {'name': '预算结余', 'balance': balance},
+            {'name': '日付上限', 'balance': pay_limit},
+            {'name': '月储金额', 'balance': float(save)},
+            {'name': '本月结余', 'balance': round((eval(current_salary)-current_month_payment-rent), 2)},
         ]
         if category:
             status.insert(
-                1, {'name': '饮食支出','balance': self.eat_total()}
+                1, {'name': '饮食支出', 'balance': self.eat_total()}
             )
             status.insert(
                 2, {'name': '其他支出', 'balance': round(self.all_total()-self.eat_total(), 2)}
