@@ -301,7 +301,7 @@ def search():
         word=word,
         today_year=today_year,
         select_year=select_year,
-        data=data,
+        data=data[::-1],
         columns=columns,
         total=total,
     )
