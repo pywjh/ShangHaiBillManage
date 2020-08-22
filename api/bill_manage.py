@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import font_manager
 from collections import Counter
-from win32api import GetSystemMetrics
+# from win32api import GetSystemMetrics
 from PIL import Image
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -38,8 +38,8 @@ class MouthCost(object):
         self.font = setting.FONT # 云图所使用的字体
         self.year = str(dt.date.today().year) if not year or year=='null' else year
         # self.my_font = font_manager.FontProperties(fname=self.font) # 统计图所使用的字体包
-        self.bar_width = GetSystemMetrics(0) / 100  # 折线图宽
-        self.bar_height = GetSystemMetrics(1) / 100  # 折线图高
+        # self.bar_width = GetSystemMetrics(0) / 100  # 折线图宽
+        # self.bar_height = GetSystemMetrics(1) / 100  # 折线图高
         self.bar_dpi = 200  # 图片分辨率
         self.month_number = str(dt.date.today().month) if not month or month=='null' else month
         self.current_fix_data = MouthCost.current_fix_data(year=self.year,
@@ -145,8 +145,8 @@ class MouthCost(object):
             month = str((dt.date(
                 int(year), int(month),1
             ) - relativedelta(months=1)).month)
-        res = list(
-            filter(lambda li: li['date'] == f"{year}_{month}", other_record))
+            res = list(
+                filter(lambda li: li['date'] == f"{year}_{month}", other_record))
         if len(res) == 1:
             return res[0]
 
