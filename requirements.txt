@@ -7,7 +7,7 @@ kiwisolver==1.2.0
 MarkupSafe==1.1.1
 matplotlib==3.2.1
 numpy==1.18.4
-Pillow==7.1.2
+Pillow==9.0.0
 prettytable==0.7.2
 pyecharts==1.7.1
 pyparsing==2.4.7
