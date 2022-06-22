@@ -6,7 +6,7 @@ Jinja2==2.11.2
 kiwisolver==1.2.0
 MarkupSafe==1.1.1
 matplotlib==3.2.1
-numpy==1.18.4
+numpy==1.22.0
 Pillow==7.1.2
 prettytable==0.7.2
 pyecharts==1.7.1
